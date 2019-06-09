@@ -1,0 +1,207 @@
+From 27aa2c7a6f978b2b4485b3241daa3580eb2edd63 Mon Sep 17 00:00:00 2001
+From: Olivier Fourdan <fourdan@xfce.org>
+Date: Tue, 16 Apr 2019 21:18:38 +0200
+Subject: screen: Remove logical size
+
+Bug: 15085
+
+We used to keep a logical screen size based on whatever Xlib would
+provide, and an actual size based on what we compute based on the actual
+monitor layout.
+
+There might be some discrepancies between the two, so let's just get rid
+of the logical size.
+---
+ src/client.c     |  8 ++++----
+ src/netwm.c      | 20 ++++++++++----------
+ src/placement.c  |  8 ++++----
+ src/screen.c     | 18 +++---------------
+ src/screen.h     |  2 --
+ src/workspaces.c |  4 ++--
+ 6 files changed, 23 insertions(+), 37 deletions(-)
+
+diff --git a/src/client.c b/src/client.c
+index b6552ad6..6d9fed46 100644
+--- a/src/client.c
++++ b/src/client.c
+@@ -3228,9 +3228,9 @@ clientNewTileSize (Client *c, XWindowChanges *wc, GdkRectangle *rect, tilePositi
+ 
+     full_x = MAX (screen_info->params->xfwm_margins[STRUTS_LEFT], rect->x);
+     full_y = MAX (screen_info->params->xfwm_margins[STRUTS_TOP], rect->y);
+-    full_w = MIN (screen_info->logical_width - screen_info->params->xfwm_margins[STRUTS_RIGHT],
++    full_w = MIN (screen_info->width - screen_info->params->xfwm_margins[STRUTS_RIGHT],
+                   rect->x + rect->width) - full_x;
+-    full_h = MIN (screen_info->logical_height - screen_info->params->xfwm_margins[STRUTS_BOTTOM],
++    full_h = MIN (screen_info->height - screen_info->params->xfwm_margins[STRUTS_BOTTOM],
+                   rect->y + rect->height) - full_y;
+     clientMaxSpace (screen_info, &full_x, &full_y, &full_w, &full_h);
+ 
+@@ -3302,9 +3302,9 @@ clientNewMaxSize (Client *c, XWindowChanges *wc, GdkRectangle *rect)
+ 
+     full_x = MAX (screen_info->params->xfwm_margins[STRUTS_LEFT], rect->x);
+     full_y = MAX (screen_info->params->xfwm_margins[STRUTS_TOP], rect->y);
+-    full_w = MIN (screen_info->logical_width - screen_info->params->xfwm_margins[STRUTS_RIGHT],
++    full_w = MIN (screen_info->width - screen_info->params->xfwm_margins[STRUTS_RIGHT],
+                   rect->x + rect->width) - full_x;
+-    full_h = MIN (screen_info->logical_height - screen_info->params->xfwm_margins[STRUTS_BOTTOM],
++    full_h = MIN (screen_info->height - screen_info->params->xfwm_margins[STRUTS_BOTTOM],
+                   rect->y + rect->height) - full_y;
+     clientMaxSpace (screen_info, &full_x, &full_y, &full_w, &full_h);
+ 
+diff --git a/src/netwm.c b/src/netwm.c
+index 732414c1..241f8e86 100644
+--- a/src/netwm.c
++++ b/src/netwm.c
+@@ -969,29 +969,29 @@ clientValidateNetStrut (Client * c)
+     screen_info = c->screen_info;
+     valid = TRUE;
+ 
+-    if (c->struts[STRUTS_TOP] > screen_info->logical_height - screen_info->margins[STRUTS_BOTTOM])
++    if (c->struts[STRUTS_TOP] > screen_info->height - screen_info->margins[STRUTS_BOTTOM])
+     {
+-       c->struts[STRUTS_TOP] = screen_info->logical_height - screen_info->margins[STRUTS_BOTTOM];
++       c->struts[STRUTS_TOP] = screen_info->height - screen_info->margins[STRUTS_BOTTOM];
+        g_warning ("Top strut value for application window 0x%lx confined to %d", c->window, c->struts[STRUTS_TOP]);
+        valid = FALSE;
+     }
+ 
+-    if (c->struts[STRUTS_BOTTOM] > screen_info->logical_height - screen_info->margins[STRUTS_TOP])
++    if (c->struts[STRUTS_BOTTOM] > screen_info->height - screen_info->margins[STRUTS_TOP])
+     {
+-       c->struts[STRUTS_BOTTOM] = screen_info->logical_height - screen_info->margins[STRUTS_TOP];
++       c->struts[STRUTS_BOTTOM] = screen_info->height - screen_info->margins[STRUTS_TOP];
+        g_warning ("Bottom strut value for application window 0x%lx confined to %d", c->window, c->struts[STRUTS_BOTTOM]);
+        valid = FALSE;
+     }
+ 
+-    if (c->struts[STRUTS_LEFT] > screen_info->logical_width - screen_info->margins[STRUTS_RIGHT])
++    if (c->struts[STRUTS_LEFT] > screen_info->width - screen_info->margins[STRUTS_RIGHT])
+     {
+-       c->struts[STRUTS_LEFT] = screen_info->logical_height - screen_info->margins[STRUTS_RIGHT];
++       c->struts[STRUTS_LEFT] = screen_info->height - screen_info->margins[STRUTS_RIGHT];
+        g_warning ("Left strut value for application window 0x%lx confined to %d", c->window, c->struts[STRUTS_LEFT]);
+        valid = FALSE;
+     }
+-    if (c->struts[STRUTS_RIGHT] > screen_info->logical_width - screen_info->margins[STRUTS_LEFT])
++    if (c->struts[STRUTS_RIGHT] > screen_info->width - screen_info->margins[STRUTS_LEFT])
+     {
+-       c->struts[STRUTS_RIGHT] = screen_info->logical_height - screen_info->margins[STRUTS_LEFT];
++       c->struts[STRUTS_RIGHT] = screen_info->height - screen_info->margins[STRUTS_LEFT];
+        g_warning ("Right strut value for application window 0x%lx confined to %d", c->window, c->struts[STRUTS_RIGHT]);
+        valid = FALSE;
+     }
+@@ -1088,10 +1088,10 @@ clientGetNetStruts (Client * c)
+         /* Fill(in values as for partial struts */
+         c->struts[STRUTS_TOP_START_X] = c->struts[STRUTS_BOTTOM_START_X] = 0;
+         c->struts[STRUTS_TOP_END_X] = c->struts[STRUTS_BOTTOM_END_X] =
+-            c->screen_info->logical_width;
++            c->screen_info->width;
+         c->struts[STRUTS_LEFT_START_Y] = c->struts[STRUTS_RIGHT_START_Y] = 0;
+         c->struts[STRUTS_LEFT_END_Y] = c->struts[STRUTS_RIGHT_END_Y] =
+-            c->screen_info->logical_height;
++            c->screen_info->height;
+ 
+         XFree (struts);
+     }
+diff --git a/src/placement.c b/src/placement.c
+index a643ef08..15975b39 100644
+--- a/src/placement.c
++++ b/src/placement.c
+@@ -114,7 +114,7 @@ strutsToRectangles (Client *c,
+     if (right)
+     {
+         set_rectangle (right,
+-                       screen_info->logical_width - c->struts[STRUTS_RIGHT],
++                       screen_info->width - c->struts[STRUTS_RIGHT],
+                        c->struts[STRUTS_RIGHT_START_Y],
+                        c->struts[STRUTS_RIGHT],
+                        c->struts[STRUTS_RIGHT_END_Y] - c->struts[STRUTS_RIGHT_START_Y]);
+@@ -133,7 +133,7 @@ strutsToRectangles (Client *c,
+     {
+         set_rectangle (bottom,
+                        c->struts[STRUTS_BOTTOM_START_X],
+-                       screen_info->logical_height - c->struts[STRUTS_BOTTOM],
++                       screen_info->height - c->struts[STRUTS_BOTTOM],
+                        c->struts[STRUTS_BOTTOM_END_X] - c->struts[STRUTS_BOTTOM_START_X],
+                        c->struts[STRUTS_BOTTOM]);
+     }
+@@ -278,8 +278,8 @@ clientConstrainPos (Client * c, gboolean show_full)
+     cy = win.y + (win.height / 2);
+     myScreenFindMonitorAtPoint (screen_info, cx, cy, &monitor);
+ 
+-    screen_width = screen_info->logical_width;
+-    screen_height = screen_info->logical_height;
++    screen_width = screen_info->width;
++    screen_height = screen_info->height;
+ 
+     if (FLAG_TEST (c->flags, CLIENT_FLAG_FULLSCREEN))
+     {
+diff --git a/src/screen.c b/src/screen.c
+index f112432c..2536a302 100644
+--- a/src/screen.c
++++ b/src/screen.c
+@@ -647,23 +647,11 @@ myScreenComputeSize (ScreenInfo *screen_info)
+         height = MAX (monitor.y + monitor.height, height);
+     }
+ 
+-    screen_info->logical_width = WidthOfScreen (screen_info->xscreen);
+-    screen_info->logical_height = HeightOfScreen (screen_info->xscreen);
+-    if ((width != screen_info->logical_width) || (height != screen_info->logical_height))
+-    {
+-        g_warning ("output size (%dx%d) and logical screen size (%dx%d) do not match",
+-                   width, height, screen_info->logical_width, screen_info->logical_height);
+-    }
+-
+     /* If we failed to compute the size, use whatever xlib reports */
+-    if (width == 0)
+-    {
+-        width = screen_info->logical_width;
+-    }
+-
+-    if (height == 0)
++    if (width == 0 || height == 0)
+     {
+-        height = screen_info->logical_height;
++        width = WidthOfScreen (screen_info->xscreen);
++        height = HeightOfScreen (screen_info->xscreen);
+     }
+ 
+     changed = ((screen_info->width != width) | (screen_info->height != height));
+diff --git a/src/screen.h b/src/screen.h
+index 3c8a8435..60490f3b 100644
+--- a/src/screen.h
++++ b/src/screen.h
+@@ -117,8 +117,6 @@ struct _ScreenInfo
+     gint depth;
+     gint width;  /* Size of all output combined */
+     gint height; /* Size of all output combined */
+-    gint logical_width;  /* Xorg reported size */
+-    gint logical_height; /* Xorg reported size */
+     Visual *visual;
+ 
+     GtkWidget *gtk_win;
+diff --git a/src/workspaces.c b/src/workspaces.c
+index e4f4f2c5..d8aa4ede 100644
+--- a/src/workspaces.c
++++ b/src/workspaces.c
+@@ -456,7 +456,7 @@ workspaceSetCount (ScreenInfo * screen_info, guint count)
+         workspaceSwitch (screen_info, count - 1, NULL, TRUE, myDisplayGetCurrentTime (display_info));
+     }
+     setNetWorkarea (display_info, screen_info->xroot, screen_info->workspace_count,
+-                    screen_info->logical_width, screen_info->logical_height, screen_info->margins);
++                    screen_info->width, screen_info->height, screen_info->margins);
+     /* Recompute the layout based on the (changed) number of desktops */
+     getDesktopLayout (display_info, screen_info->xroot, screen_info->workspace_count,
+                      &screen_info->desktop_layout);
+@@ -598,7 +598,7 @@ workspaceUpdateArea (ScreenInfo *screen_info)
+     {
+         TRACE ("margins have changed, updating net_workarea");
+         setNetWorkarea (display_info, screen_info->xroot, screen_info->workspace_count,
+-                        screen_info->logical_width, screen_info->logical_height, screen_info->margins);
++                        screen_info->width, screen_info->height, screen_info->margins);
+         /* Also prevent windows from being off screen, just like when screen is resized */
+         clientScreenResize(screen_info, FALSE);
+     }
+-- 
+cgit v1.2.1
+

@@ -1,8 +1,8 @@
-Index: xfwm4-4.12.3/src/client.c
+Index: xfwm4-4.13.1/src/client.c
 ===================================================================
---- xfwm4-4.12.3.orig/src/client.c
-+++ xfwm4-4.12.3/src/client.c
-@@ -165,6 +165,93 @@ clientUpdateColormaps (Client *c)
+--- xfwm4-4.13.1.orig/src/client.c
++++ xfwm4-4.13.1/src/client.c
+@@ -167,6 +167,93 @@ clientUpdateColormaps (Client *c)
      }
  }
  
@@ -96,7 +96,7 @@ Index: xfwm4-4.12.3/src/client.c
  static gchar*
  clientCreateTitleName (Client *c, gchar *name, gchar *hostname)
  {
-@@ -178,14 +265,16 @@ clientCreateTitleName (Client *c, gchar
+@@ -180,14 +267,16 @@ clientCreateTitleName (Client *c, gchar
      screen_info = c->screen_info;
      display_info = screen_info->display_info;
  
@@ -115,7 +115,7 @@ Index: xfwm4-4.12.3/src/client.c
      }
  
      return title;
-@@ -1332,6 +1421,10 @@ clientFree (Client *c)
+@@ -1336,6 +1425,10 @@ clientFree (Client *c)
      {
          g_free (c->hostname);
      }
@@ -126,7 +126,7 @@ Index: xfwm4-4.12.3/src/client.c
      if (c->size)
      {
          XFree (c->size);
-@@ -1441,6 +1534,7 @@ static void
+@@ -1448,6 +1541,7 @@ static void
  clientUpdateIconPix (Client *c)
  {
      ScreenInfo *screen_info;
@@ -134,8 +134,8 @@ Index: xfwm4-4.12.3/src/client.c
      gint size;
      GdkPixbuf *icon;
      int i;
-@@ -1451,12 +1545,13 @@ clientUpdateIconPix (Client *c)
-     TRACE ("entering clientUpdateIconPix for \"%s\" (0x%lx)", c->name, c->window);
+@@ -1457,12 +1551,13 @@ clientUpdateIconPix (Client *c)
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
  
      screen_info = c->screen_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
@@ -149,7 +149,7 @@ Index: xfwm4-4.12.3/src/client.c
      {
          /* The current theme has no menu button */
          return;
-@@ -1464,13 +1559,13 @@ clientUpdateIconPix (Client *c)
+@@ -1470,13 +1565,13 @@ clientUpdateIconPix (Client *c)
  
      for (i = 0; i < STATE_TOGGLED; i++)
      {
@@ -167,7 +167,7 @@ Index: xfwm4-4.12.3/src/client.c
  
      if (size > 1)
      {
-@@ -1647,6 +1742,11 @@ clientFrame (DisplayInfo *display_info,
+@@ -1644,6 +1739,11 @@ clientFrame (DisplayInfo *display_info,
      getTransientFor (display_info, screen_info->xroot, c->window, &c->transient_for);
      XChangeSaveSet(display_info->dpy, c->window, SetModeInsert);
  
@@ -179,19 +179,19 @@ Index: xfwm4-4.12.3/src/client.c
      /* Initialize structure */
      c->size = NULL;
      c->flags = 0L;
-@@ -3928,9 +4028,11 @@ xfwmPixmap *
+@@ -3936,9 +4036,11 @@ xfwmPixmap *
  clientGetButtonPixmap (Client *c, int button, int state)
  {
      ScreenInfo *screen_info;
 +    Decoration *decoration;
  
-     TRACE ("entering clientGetButtonPixmap button=%i, state=%i", button, state);
+     TRACE ("button=%i, state=%i", button, state);
      screen_info = c->screen_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
      switch (button)
      {
          case MENU_BUTTON:
-@@ -3942,32 +4044,32 @@ clientGetButtonPixmap (Client *c, int bu
+@@ -3950,32 +4052,32 @@ clientGetButtonPixmap (Client *c, int bu
              break;
          case SHADE_BUTTON:
              if (FLAG_TEST (c->flags, CLIENT_FLAG_SHADED)
@@ -234,11 +234,11 @@ Index: xfwm4-4.12.3/src/client.c
  }
  
  int
-Index: xfwm4-4.12.3/src/client.h
+Index: xfwm4-4.13.1/src/client.h
 ===================================================================
---- xfwm4-4.12.3.orig/src/client.h
-+++ xfwm4-4.12.3/src/client.h
-@@ -327,6 +327,8 @@ struct _Client
+--- xfwm4-4.13.1.orig/src/client.h
++++ xfwm4-4.13.1/src/client.h
+@@ -332,6 +332,8 @@ struct _Client
      gint struts[STRUTS_SIZE];
      gchar *hostname;
      gchar *name;
@@ -247,16 +247,16 @@ Index: xfwm4-4.12.3/src/client.h
      guint32 user_time;
      GPid pid;
      guint32 ping_time;
-Index: xfwm4-4.12.3/src/frame.c
+Index: xfwm4-4.13.1/src/frame.c
 ===================================================================
---- xfwm4-4.12.3.orig/src/frame.c
-+++ xfwm4-4.12.3/src/frame.c
+--- xfwm4-4.13.1.orig/src/frame.c
++++ xfwm4-4.13.1/src/frame.c
 @@ -48,51 +48,61 @@ typedef struct
  int
  frameDecorationLeft (ScreenInfo *screen_info)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameDecorationLeft");
+     TRACE ("entering");
  
      g_return_val_if_fail (screen_info != NULL, 0);
 -    return screen_info->sides[SIDE_LEFT][ACTIVE].width;
@@ -268,7 +268,7 @@ Index: xfwm4-4.12.3/src/frame.c
  frameDecorationRight (ScreenInfo *screen_info)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameDecorationRight");
+     TRACE ("entering");
  
      g_return_val_if_fail (screen_info != NULL, 0);
 -    return screen_info->sides[SIDE_RIGHT][ACTIVE].width;
@@ -280,7 +280,7 @@ Index: xfwm4-4.12.3/src/frame.c
  frameDecorationTop (ScreenInfo *screen_info)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameDecorationTop");
+     TRACE ("entering");
  
      g_return_val_if_fail (screen_info != NULL, 0);
 -    return screen_info->title[TITLE_3][ACTIVE].height;
@@ -292,7 +292,7 @@ Index: xfwm4-4.12.3/src/frame.c
  frameDecorationBottom (ScreenInfo *screen_info)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameDecorationBottom");
+     TRACE ("entering");
  
      g_return_val_if_fail (screen_info != NULL, 0);
 -    return screen_info->sides[SIDE_BOTTOM][ACTIVE].height;
@@ -304,9 +304,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameLeft (Client * c)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameLeft");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (FLAG_TEST (c->xfwm_flags, XFWM_FLAG_HAS_BORDER)
          && !FLAG_TEST (c->flags, CLIENT_FLAG_FULLSCREEN)
@@ -323,9 +323,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameRight (Client * c)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameRight");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (FLAG_TEST (c->xfwm_flags, XFWM_FLAG_HAS_BORDER)
          && !FLAG_TEST (c->flags, CLIENT_FLAG_FULLSCREEN)
@@ -342,9 +342,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameTop (Client * c)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameTop");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (CLIENT_HAS_FRAME (c))
      {
@@ -358,9 +358,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameBottom (Client * c)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameBottom");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (FLAG_TEST (c->xfwm_flags, XFWM_FLAG_HAS_BORDER)
          && !FLAG_TEST (c->flags, CLIENT_FLAG_FULLSCREEN)
@@ -377,9 +377,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameTopLeftWidth (Client * c, int state)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameTopLeftWidth");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (FLAG_TEST_ALL (c->flags, CLIENT_FLAG_MAXIMIZED)
          && c->screen_info->params->borderless_maximize)
@@ -395,9 +395,9 @@ Index: xfwm4-4.12.3/src/frame.c
  frameTopRightWidth (Client * c, int state)
  {
 +    Decoration *decoration;
-     TRACE ("entering frameTopRightWidth");
- 
      g_return_val_if_fail (c != NULL, 0);
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
+ 
 +    decoration = getDecorationForColor(c->screen_info, c->qubes_label_color);
      if (FLAG_TEST_ALL (c->flags, CLIENT_FLAG_MAXIMIZED)
          && c->screen_info->params->borderless_maximize)
@@ -415,10 +415,10 @@ Index: xfwm4-4.12.3/src/frame.c
      ScreenInfo *screen_info;
 +    Decoration *decoration;
  
-     TRACE ("entering frameFillTitlePixmap");
- 
-@@ -369,22 +390,24 @@ frameFillTitlePixmap (Client * c, int st
-     g_return_if_fail (top_pm);
+     g_return_if_fail (c);
+     g_return_if_fail (title_pm);
+@@ -368,22 +389,24 @@ frameFillTitlePixmap (Client * c, int st
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
  
      screen_info = c->screen_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
@@ -443,18 +443,18 @@ Index: xfwm4-4.12.3/src/frame.c
  {
      ScreenInfo *screen_info;
 +    Decoration *decoration;
-     GdkPixmap *gpixmap;
-     GdkGCValues values;
-     GdkGC *gc;
-@@ -401,6 +424,7 @@ frameCreateTitlePixmap (Client * c, int
-     g_return_if_fail (top_pm);
+     cairo_surface_t *surface;
+     cairo_t *cr;
+     PangoLayout *layout;
+@@ -398,6 +421,7 @@ frameCreateTitlePixmap (Client * c, int
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
  
      screen_info = c->screen_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
  
      if (left > right)
      {
-@@ -461,9 +485,9 @@ frameCreateTitlePixmap (Client * c, int
+@@ -459,9 +483,9 @@ frameCreateTitlePixmap (Client * c, int
          title_y = MAX (0, frameTop (c) - title_height);
      }
  
@@ -466,7 +466,7 @@ Index: xfwm4-4.12.3/src/frame.c
      }
      else
      {
-@@ -475,8 +499,8 @@ frameCreateTitlePixmap (Client * c, int
+@@ -473,8 +497,8 @@ frameCreateTitlePixmap (Client * c, int
      }
  
      w1 = 0;
@@ -477,7 +477,7 @@ Index: xfwm4-4.12.3/src/frame.c
  
      if (screen_info->params->full_width_title)
      {
-@@ -696,6 +720,7 @@ static void
+@@ -702,6 +726,7 @@ static void
  frameSetShape (Client * c, int state, FramePixmap * frame_pix, int button_x[BUTTON_COUNT])
  {
      ScreenInfo *screen_info;
@@ -485,15 +485,15 @@ Index: xfwm4-4.12.3/src/frame.c
      DisplayInfo *display_info;
      XRectangle rect;
      xfwmPixmap *my_pixmap;
-@@ -705,6 +730,7 @@ frameSetShape (Client * c, int state, Fr
-     TRACE ("setting shape for client (0x%lx)", c->window);
+@@ -711,6 +736,7 @@ frameSetShape (Client * c, int state, Fr
+     TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
  
      screen_info = c->screen_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
      display_info = screen_info->display_info;
  
      if (!display_info->have_shape)
-@@ -776,25 +802,25 @@ frameSetShape (Client * c, int state, Fr
+@@ -782,25 +808,25 @@ frameSetShape (Client * c, int state, Fr
          if (xfwmWindowVisible (&c->corners[CORNER_BOTTOM_LEFT]))
          {
              XShapeCombineMask (display_info->dpy, MYWINDOW_XWINDOW (c->corners[CORNER_BOTTOM_LEFT]),
@@ -523,7 +523,7 @@ Index: xfwm4-4.12.3/src/frame.c
          }
  
          for (i = 0; i < BUTTON_COUNT; i++)
-@@ -808,48 +834,48 @@ frameSetShape (Client * c, int state, Fr
+@@ -814,48 +840,48 @@ frameSetShape (Client * c, int state, Fr
          }
  
          if (xfwmWindowVisible (&c->corners[CORNER_TOP_LEFT]) &&
@@ -582,7 +582,7 @@ Index: xfwm4-4.12.3/src/frame.c
                             - (frameHeight (c) - frameTop (c) + 1);
              XShapeCombineRectangles (display_info->dpy, MYWINDOW_XWINDOW (c->corners[CORNER_BOTTOM_RIGHT]),
                                       ShapeBounding, 0, 0, &rect, 1, ShapeSubtract, 0);
-@@ -887,7 +913,7 @@ frameSetShape (Client * c, int state, Fr
+@@ -893,7 +919,7 @@ frameSetShape (Client * c, int state, Fr
          if (xfwmWindowVisible (&c->sides[SIDE_BOTTOM]))
          {
              XShapeCombineShape (display_info->dpy, screen_info->shape_win, ShapeBounding,
@@ -591,7 +591,7 @@ Index: xfwm4-4.12.3/src/frame.c
                                  frameHeight (c) - frameBottom (c),
                                  MYWINDOW_XWINDOW (c->sides[SIDE_BOTTOM]), ShapeBounding, ShapeUnion);
          }
-@@ -895,7 +921,7 @@ frameSetShape (Client * c, int state, Fr
+@@ -901,7 +927,7 @@ frameSetShape (Client * c, int state, Fr
          if (xfwmWindowVisible (&c->sides[SIDE_TOP]))
          {
              XShapeCombineShape (display_info->dpy, screen_info->shape_win, ShapeBounding,
@@ -600,7 +600,7 @@ Index: xfwm4-4.12.3/src/frame.c
                                  frameTop (c) - frameBottom (c),
                                  MYWINDOW_XWINDOW (c->sides[SIDE_TOP]), ShapeBounding, ShapeUnion);
          }
-@@ -903,15 +929,15 @@ frameSetShape (Client * c, int state, Fr
+@@ -909,15 +935,15 @@ frameSetShape (Client * c, int state, Fr
          if (xfwmWindowVisible (&c->corners[CORNER_BOTTOM_LEFT]))
          {
              XShapeCombineShape (display_info->dpy, screen_info->shape_win, ShapeBounding, 0,
@@ -619,7 +619,7 @@ Index: xfwm4-4.12.3/src/frame.c
                                  MYWINDOW_XWINDOW (c->corners[CORNER_BOTTOM_RIGHT]), ShapeBounding, ShapeUnion);
          }
  
-@@ -927,7 +953,7 @@ frameSetShape (Client * c, int state, Fr
+@@ -933,7 +959,7 @@ frameSetShape (Client * c, int state, Fr
              if (xfwmWindowVisible (&c->buttons[i]))
              {
                  XShapeCombineShape (display_info->dpy, screen_info->shape_win, ShapeBounding, button_x[i],
@@ -628,7 +628,7 @@ Index: xfwm4-4.12.3/src/frame.c
                                      MYWINDOW_XWINDOW (c->buttons[i]), ShapeBounding, ShapeUnion);
              }
          }
-@@ -977,6 +1003,7 @@ static void
+@@ -983,6 +1009,7 @@ static void
  frameDrawWin (Client * c)
  {
      ScreenInfo *screen_info;
@@ -636,7 +636,7 @@ Index: xfwm4-4.12.3/src/frame.c
      FramePixmap frame_pix;
      xfwmPixmap *my_pixmap;
      gint state, x, button, left, right;
-@@ -995,6 +1022,7 @@ frameDrawWin (Client * c)
+@@ -999,6 +1026,7 @@ frameDrawWin (Client * c)
      frameClearQueueDraw (c);
  
      screen_info = c->screen_info;
@@ -644,7 +644,7 @@ Index: xfwm4-4.12.3/src/frame.c
      requires_clearing = FALSE;
      width_changed = FALSE;
      height_changed = FALSE;
-@@ -1086,7 +1114,7 @@ frameDrawWin (Client * c)
+@@ -1090,7 +1118,7 @@ frameDrawWin (Client * c)
              }
              else if (button >= 0)
              {
@@ -653,7 +653,7 @@ Index: xfwm4-4.12.3/src/frame.c
                  {
                      my_pixmap = clientGetButtonPixmap (c, button, clientGetButtonState (c, button, state));
                      if (!xfwmPixmapNone(my_pixmap))
-@@ -1094,11 +1122,11 @@ frameDrawWin (Client * c)
+@@ -1098,11 +1126,11 @@ frameDrawWin (Client * c)
                          xfwmWindowSetBG (&c->buttons[button], my_pixmap);
                      }
                      xfwmWindowShow (&c->buttons[button], x,
@@ -669,7 +669,7 @@ Index: xfwm4-4.12.3/src/frame.c
                          screen_info->params->button_spacing;
                  }
                  else
-@@ -1121,19 +1149,19 @@ frameDrawWin (Client * c)
+@@ -1125,19 +1153,19 @@ frameDrawWin (Client * c)
              }
              else if (button >= 0)
              {
@@ -694,7 +694,7 @@ Index: xfwm4-4.12.3/src/frame.c
                      button_x[button] = x;
                  }
                  else
-@@ -1147,12 +1175,12 @@ frameDrawWin (Client * c)
+@@ -1151,12 +1179,12 @@ frameDrawWin (Client * c)
  
          top_width = frameWidth (c) - frameTopLeftWidth (c, state) - frameTopRightWidth (c, state);
          bottom_width = frameWidth (c) -
@@ -711,7 +711,7 @@ Index: xfwm4-4.12.3/src/frame.c
  
          xfwmPixmapInit (screen_info, &frame_pix.pm_title);
          xfwmPixmapInit (screen_info, &frame_pix.pm_sides[SIDE_TOP]);
-@@ -1171,13 +1199,13 @@ frameDrawWin (Client * c)
+@@ -1175,13 +1203,13 @@ frameDrawWin (Client * c)
          if (requires_clearing)
          {
              xfwmWindowSetBG (&c->corners[CORNER_TOP_LEFT],
@@ -729,7 +729,7 @@ Index: xfwm4-4.12.3/src/frame.c
          }
  
          if (FLAG_TEST_ALL (c->flags, CLIENT_FLAG_MAXIMIZED)
-@@ -1203,7 +1231,7 @@ frameDrawWin (Client * c)
+@@ -1207,7 +1235,7 @@ frameDrawWin (Client * c)
              {
                  xfwmPixmapCreate (screen_info, &frame_pix.pm_sides[SIDE_LEFT],
                      frameLeft (c), left_height);
@@ -738,7 +738,7 @@ Index: xfwm4-4.12.3/src/frame.c
                      &frame_pix.pm_sides[SIDE_LEFT],
                      0, 0, frameLeft (c), left_height);
                  xfwmWindowSetBG (&c->sides[SIDE_LEFT],
-@@ -1213,7 +1241,7 @@ frameDrawWin (Client * c)
+@@ -1217,7 +1245,7 @@ frameDrawWin (Client * c)
  
                  xfwmPixmapCreate (screen_info, &frame_pix.pm_sides[SIDE_RIGHT],
                      frameRight (c), right_height);
@@ -747,7 +747,7 @@ Index: xfwm4-4.12.3/src/frame.c
                      &frame_pix.pm_sides[SIDE_RIGHT],
                      0, 0, frameRight (c), right_height);
                  xfwmWindowSetBG (&c->sides[SIDE_RIGHT],
-@@ -1225,13 +1253,13 @@ frameDrawWin (Client * c)
+@@ -1229,13 +1257,13 @@ frameDrawWin (Client * c)
  
              xfwmPixmapCreate (screen_info, &frame_pix.pm_sides[SIDE_BOTTOM],
                  bottom_width, frameBottom (c));
@@ -763,7 +763,7 @@ Index: xfwm4-4.12.3/src/frame.c
                  frameHeight (c) - frameBottom (c), bottom_width, frameBottom (c),
                  (requires_clearing | width_changed));
  
-@@ -1239,7 +1267,7 @@ frameDrawWin (Client * c)
+@@ -1243,7 +1271,7 @@ frameDrawWin (Client * c)
              {
                  xfwmWindowSetBG (&c->sides[SIDE_TOP], &frame_pix.pm_sides[SIDE_TOP]);
                  xfwmWindowShow (&c->sides[SIDE_TOP],
@@ -772,7 +772,7 @@ Index: xfwm4-4.12.3/src/frame.c
                      0, top_width, frame_pix.pm_sides[SIDE_TOP].height,
                      (requires_clearing | width_changed));
              }
-@@ -1250,29 +1278,29 @@ frameDrawWin (Client * c)
+@@ -1254,29 +1282,29 @@ frameDrawWin (Client * c)
  
              xfwmWindowShow (&c->corners[CORNER_TOP_LEFT], 0, 0,
                  frameTopLeftWidth (c, state),
@@ -811,19 +811,19 @@ Index: xfwm4-4.12.3/src/frame.c
                  requires_clearing);
          }
          frameSetShape (c, state, &frame_pix, button_x);
-Index: xfwm4-4.12.3/src/mypixmap.c
+Index: xfwm4-4.13.1/src/mypixmap.c
 ===================================================================
---- xfwm4-4.12.3.orig/src/mypixmap.c
-+++ xfwm4-4.12.3/src/mypixmap.c
-@@ -43,6 +43,7 @@
- #include <gdk/gdk.h>
+--- xfwm4-4.13.1.orig/src/mypixmap.c
++++ xfwm4-4.13.1/src/mypixmap.c
+@@ -44,6 +44,7 @@
  #include <gdk/gdkx.h>
+ #include <cairo/cairo-xlib.h>
  #include <libxfce4util/libxfce4util.h>
 +#include <gtk/gtk.h>
  #include <stdlib.h>
  #include <stdio.h>
  
-@@ -513,7 +514,7 @@ file_buffer (enum buf_op op, gpointer ha
+@@ -516,7 +517,7 @@ file_buffer (enum buf_op op, gpointer ha
  
  /* This function does all the work. */
  static GdkPixbuf *
@@ -832,7 +832,7 @@ Index: xfwm4-4.12.3/src/mypixmap.c
  {
      gchar pixel_str[32];
      const gchar *buffer;
-@@ -603,6 +604,18 @@ pixbuf_create_from_xpm (gpointer handle,
+@@ -606,6 +607,18 @@ pixbuf_create_from_xpm (gpointer handle,
              color->red = 0;
              color->green = 0;
              color->blue = 0;
@@ -851,7 +851,7 @@ Index: xfwm4-4.12.3/src/mypixmap.c
          }
  
          g_free (color_name);
-@@ -674,7 +687,8 @@ pixbuf_create_from_xpm (gpointer handle,
+@@ -677,7 +690,8 @@ pixbuf_create_from_xpm (gpointer handle,
  
  
  static GdkPixbuf *
@@ -861,7 +861,7 @@ Index: xfwm4-4.12.3/src/mypixmap.c
  {
      guchar buffer[1024];
      GdkPixbuf *pixbuf;
-@@ -698,7 +712,8 @@ xpm_image_load (const char *filename, xf
+@@ -703,7 +717,8 @@ xpm_image_load (const char *filename, xf
      fseek (f, 0, SEEK_SET);
      memset (&h, 0, sizeof (h));
      h.infile = f;
@@ -871,7 +871,7 @@ Index: xfwm4-4.12.3/src/mypixmap.c
      g_free (h.buffer);
      fclose (f);
  
-@@ -933,7 +948,7 @@ xfwmPixmapRenderGdkPixbuf (xfwmPixmap *
+@@ -949,7 +964,7 @@ xfwmPixmapRenderGdkPixbuf (xfwmPixmap *
  }
  
  gboolean
@@ -880,7 +880,7 @@ Index: xfwm4-4.12.3/src/mypixmap.c
  {
      gchar *filename;
      gchar *filexpm;
-@@ -954,7 +969,17 @@ xfwmPixmapLoad (ScreenInfo * screen_info
+@@ -969,7 +984,17 @@ xfwmPixmapLoad (ScreenInfo * screen_info
      filexpm = g_strdup_printf ("%s.%s", file, "xpm");
      filename = g_build_filename (dir, filexpm, NULL);
      g_free (filexpm);
@@ -899,11 +899,11 @@ Index: xfwm4-4.12.3/src/mypixmap.c
      g_free (filename);
  
      /* Compose with other image formats, if any available. */
-Index: xfwm4-4.12.3/src/mypixmap.h
+Index: xfwm4-4.13.1/src/mypixmap.h
 ===================================================================
---- xfwm4-4.12.3.orig/src/mypixmap.h
-+++ xfwm4-4.12.3/src/mypixmap.h
-@@ -61,7 +61,8 @@ gboolean                 xfwmPixmapLoad
+--- xfwm4-4.13.1.orig/src/mypixmap.h
++++ xfwm4-4.13.1/src/mypixmap.h
+@@ -62,7 +62,8 @@ gboolean                 xfwmPixmapLoad
                                                                   xfwmPixmap *,
                                                                   const gchar *,
                                                                   const gchar *,
@@ -913,11 +913,11 @@ Index: xfwm4-4.12.3/src/mypixmap.h
  void                     xfwmPixmapCreate                       (ScreenInfo *,
                                                                   xfwmPixmap *,
                                                                   gint,
-Index: xfwm4-4.12.3/src/screen.c
+Index: xfwm4-4.13.1/src/screen.c
 ===================================================================
---- xfwm4-4.12.3.orig/src/screen.c
-+++ xfwm4-4.12.3/src/screen.c
-@@ -166,7 +166,7 @@ myScreenInit (DisplayInfo *display_info,
+--- xfwm4-4.13.1.orig/src/screen.c
++++ xfwm4-4.13.1/src/screen.c
+@@ -170,7 +170,7 @@ myScreenInit (DisplayInfo *display_info,
      GdkWindow *event_win;
      PangoLayout *layout;
      long desktop_visible;
@@ -926,9 +926,9 @@ Index: xfwm4-4.12.3/src/screen.c
  
      g_return_val_if_fail (display_info, NULL);
      g_return_val_if_fail (GDK_IS_SCREEN (gscr), NULL);
-@@ -313,30 +313,8 @@ myScreenInit (DisplayInfo *display_info,
-     screen_info->title_shadow_colors[INACTIVE].gc = NULL;
-     screen_info->title_shadow_colors[INACTIVE].allocated = FALSE;
+@@ -308,30 +308,8 @@ myScreenInit (DisplayInfo *display_info,
+     screen_info->font_desc = NULL;
+     screen_info->box_gc = None;
  
 -    for (i = 0; i < SIDE_COUNT; i++)
 -    {
@@ -959,20 +959,20 @@ Index: xfwm4-4.12.3/src/screen.c
  
      screen_info->monitors_index = NULL;
      myScreenInvalidateMonitorCache (screen_info);
-Index: xfwm4-4.12.3/src/screen.h
+Index: xfwm4-4.13.1/src/screen.h
 ===================================================================
---- xfwm4-4.12.3.orig/src/screen.h
-+++ xfwm4-4.12.3/src/screen.h
-@@ -55,6 +55,8 @@
-                                  SuperMask | \
+--- xfwm4-4.13.1.orig/src/screen.h
++++ xfwm4-4.13.1/src/screen.h
+@@ -62,6 +62,8 @@
                                   HyperMask)
+ 
  
 +#define XPM_COLOR_SYMBOL_SIZE   24
 +
  #ifdef HAVE_COMPOSITOR
  struct _gaussian_conv {
      int     size;
-@@ -63,6 +65,15 @@ struct _gaussian_conv {
+@@ -70,6 +72,15 @@ struct _gaussian_conv {
  typedef struct _gaussian_conv gaussian_conv;
  #endif /* HAVE_COMPOSITOR */
  
@@ -988,26 +988,26 @@ Index: xfwm4-4.12.3/src/screen.h
  struct _ScreenInfo
  {
      /* The display this screen belongs to */
-@@ -81,11 +92,10 @@ struct _ScreenInfo
+@@ -88,11 +99,10 @@ struct _ScreenInfo
      /* Theme pixmaps and other params, per screen */
-     XfwmColor title_colors[2];
-     XfwmColor title_shadow_colors[2];
+     GdkRGBA title_colors[2];
+     GdkRGBA title_shadow_colors[2];
 -    xfwmPixmap buttons[BUTTON_COUNT][STATE_COUNT];
 -    xfwmPixmap corners[CORNER_COUNT][2];
 -    xfwmPixmap sides[SIDE_COUNT][2];
 -    xfwmPixmap title[TITLE_COUNT][2];
 -    xfwmPixmap top[TITLE_COUNT][2];
-+    XfwmColor qubes_label_colors[MAX_QUBES_LABELS];
++    GdkRGBA qubes_label_colors[MAX_QUBES_LABELS];
 +    xfwmColorSymbol colsym[ XPM_COLOR_SYMBOL_SIZE + 1 ];
 +    /* hash table label_color->Decoration* */
 +    GHashTable *decoration;
  
      /* Per screen graphic contexts */
      GC box_gc;
-Index: xfwm4-4.12.3/src/settings.c
+Index: xfwm4-4.13.1/src/settings.c
 ===================================================================
---- xfwm4-4.12.3.orig/src/settings.c
-+++ xfwm4-4.12.3/src/settings.c
+--- xfwm4-4.13.1.orig/src/settings.c
++++ xfwm4-4.13.1/src/settings.c
 @@ -46,7 +46,6 @@
  
  #define CHANNEL_XFWM            "xfwm4"
@@ -1016,7 +1016,7 @@ Index: xfwm4-4.12.3/src/settings.c
  
  #define KEYMAP_UPDATE_TIMEOUT   250 /* ms */
  static guint keymap_timeout   = 0;
-@@ -305,10 +304,8 @@ getTitleShadow (Settings *rc, const gcha
+@@ -265,10 +264,8 @@ getTitleShadow (Settings *rc, const gcha
      return TITLE_SHADOW_NONE;
  }
  
@@ -1028,7 +1028,7 @@ Index: xfwm4-4.12.3/src/settings.c
      static const char *side_names[] = {
          "left",
          "right",
-@@ -342,6 +339,92 @@ loadTheme (ScreenInfo *screen_info, Sett
+@@ -302,6 +299,92 @@ loadTheme (ScreenInfo *screen_info, Sett
          "toggled-prelight",
          "toggled-pressed"
      };
@@ -1121,7 +1121,7 @@ Index: xfwm4-4.12.3/src/settings.c
  
      static const char *ui_part[] = {
          "fg",
-@@ -399,11 +482,9 @@ loadTheme (ScreenInfo *screen_info, Sett
+@@ -359,11 +442,9 @@ loadTheme (ScreenInfo *screen_info, Sett
          NULL
      };
  
@@ -1133,7 +1133,7 @@ Index: xfwm4-4.12.3/src/settings.c
      GtkWidget *widget;
      gchar *theme;
      const gchar *font;
-@@ -463,11 +544,13 @@ loadTheme (ScreenInfo *screen_info, Sett
+@@ -421,11 +502,13 @@ loadTheme (ScreenInfo *screen_info, Sett
  
      for (i = 0; i < XPM_COLOR_SYMBOL_SIZE; i++)
      {
@@ -1151,9 +1151,9 @@ Index: xfwm4-4.12.3/src/settings.c
  
      /* Standard double click time ... */
      display_info->double_click_time = abs (getIntValue ("double_click_time", rc));
-@@ -519,48 +602,6 @@ loadTheme (ScreenInfo *screen_info, Sett
-     screen_info->white_gc = widget->style->white_gc;
-     g_object_ref (G_OBJECT (widget->style->white_gc));
+@@ -458,48 +541,6 @@ loadTheme (ScreenInfo *screen_info, Sett
+     gdk_rgba_parse (&screen_info->title_shadow_colors[ACTIVE], getStringValue ("active_text_shadow_color", rc));
+     gdk_rgba_parse (&screen_info->title_shadow_colors[INACTIVE], getStringValue ("inactive_text_shadow_color", rc));
  
 -    for (i = 0; i < SIDE_COUNT; i++)
 -    {
@@ -1200,7 +1200,7 @@ Index: xfwm4-4.12.3/src/settings.c
      screen_info->box_gc = createGC (screen_info, "#FFFFFF", GXxor, NULL, 2, TRUE);
  
      if (!g_ascii_strcasecmp ("left", getStringValue ("title_alignment", rc)))
-@@ -592,7 +633,9 @@ loadTheme (ScreenInfo *screen_info, Sett
+@@ -531,7 +572,9 @@ loadTheme (ScreenInfo *screen_info, Sett
      screen_info->params->title_horizontal_offset =
          getIntValue ("title_horizontal_offset", rc);
  
@@ -1211,7 +1211,7 @@ Index: xfwm4-4.12.3/src/settings.c
  }
  
  static void
-@@ -944,37 +987,47 @@ loadSettings (ScreenInfo *screen_info)
+@@ -884,43 +927,55 @@ loadSettings (ScreenInfo *screen_info)
      return TRUE;
  }
  
@@ -1222,7 +1222,13 @@ Index: xfwm4-4.12.3/src/settings.c
  {
      int i, j;
  
--    TRACE ("entering unloadTheme");
+     TRACE ("entering");
+ 
+-    if (screen_info->font_desc != NULL)
+-    {
+-        pango_font_description_free (screen_info->font_desc);
+-        screen_info->font_desc = NULL;
+-    }
 -
      for (i = 0; i < SIDE_COUNT; i++)
      {
@@ -1262,7 +1268,13 @@ Index: xfwm4-4.12.3/src/settings.c
 +static void
 +unloadTheme (ScreenInfo *screen_info)
 +{
-+    TRACE ("entering unloadTheme");
++    TRACE ("entering");
++
++    if (screen_info->font_desc != NULL)
++    {
++        pango_font_description_free (screen_info->font_desc);
++        screen_info->font_desc = NULL;
++    }
 +
 +    g_hash_table_remove_all(screen_info->decoration);
 +
@@ -1272,10 +1284,10 @@ Index: xfwm4-4.12.3/src/settings.c
      if (screen_info->box_gc != None)
      {
          XFreeGC (myScreenGetXDisplay (screen_info), screen_info->box_gc);
-Index: xfwm4-4.12.3/src/settings.h
+Index: xfwm4-4.13.1/src/settings.h
 ===================================================================
---- xfwm4-4.12.3.orig/src/settings.h
-+++ xfwm4-4.12.3/src/settings.h
+--- xfwm4-4.13.1.orig/src/settings.h
++++ xfwm4-4.13.1/src/settings.h
 @@ -155,6 +155,33 @@ enum
      PLACE_CENTER
  };
@@ -1307,10 +1319,10 @@ Index: xfwm4-4.12.3/src/settings.h
 +    0x000000,   /* QUBES_LABEL_BLACK */
 +};
 +
- struct _XfwmColor
+ struct _Settings
  {
-     GdkColor col;
-@@ -197,6 +224,7 @@ struct _XfwmParams
+     gchar  *option;
+@@ -190,6 +217,7 @@ struct _XfwmParams
      int shadow_delta_y;
      int shadow_opacity;
      int snap_width;
@@ -1318,7 +1330,7 @@ Index: xfwm4-4.12.3/src/settings.h
      int title_alignment;
      int title_horizontal_offset;
      int title_shadow[2];
-@@ -250,5 +278,9 @@ gboolean                 reloadSettings
+@@ -243,5 +271,9 @@ gboolean                 reloadSettings
                                                                   int);
  gboolean                 initSettings                           (ScreenInfo *);
  void                     closeSettings                          (ScreenInfo *);
@@ -1328,12 +1340,12 @@ Index: xfwm4-4.12.3/src/settings.h
 +#define QUBES_LABEL_DOM0 0xFFFFFFFF
  
  #endif /* INC_SETTINGS_H */
-Index: xfwm4-4.12.3/src/display.h
+Index: xfwm4-4.13.1/src/display.h
 ===================================================================
---- xfwm4-4.12.3.orig/src/display.h
-+++ xfwm4-4.12.3/src/display.h
-@@ -277,6 +277,7 @@ typedef struct _DisplayInfo       Displa
- typedef struct _XfwmColor         XfwmColor;
+--- xfwm4-4.13.1.orig/src/display.h
++++ xfwm4-4.13.1/src/display.h
+@@ -279,6 +279,7 @@ typedef struct _Client            Client
+ typedef struct _DisplayInfo       DisplayInfo;
  typedef struct _xfwmPixmap        xfwmPixmap;
  typedef struct _XfwmParams        XfwmParams;
 +typedef struct _Decoration        Decoration;

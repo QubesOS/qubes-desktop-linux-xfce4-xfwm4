@@ -1,0 +1,75 @@
+From 61e3055874184a5590fe7070faf0032e5a25b2c8 Mon Sep 17 00:00:00 2001
+From: Olivier Fourdan <fourdan@xfce.org>
+Date: Tue, 23 Apr 2019 21:27:39 +0200
+Subject: cycling: Remove client if destroyed while cycling
+
+Bug: 15318
+
+Fix a regression where the client would remain visible if closed while
+cycling.
+
+Fixes: ef33ff7 "Replace XEvent with XfwmEvent + add xfwm_device..."
+Signed-off-by: Olivier Fourdan <fourdan@xfce.org>
+---
+ src/cycle.c | 25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
+
+diff --git a/src/cycle.c b/src/cycle.c
+index 164024d5..5b092f5e 100644
+--- a/src/cycle.c
++++ b/src/cycle.c
+@@ -251,7 +251,7 @@ clientCycleEventFilter (XfwmEvent *event, gpointer data)
+     eventFilterStatus status;
+     KeyCode cancel, left, right, up, down;
+     int key, modifiers;
+-    gboolean cycling, gone;
++    gboolean cycling;
+     GList *li;
+ 
+     TRACE ("entering");
+@@ -275,7 +275,6 @@ clientCycleEventFilter (XfwmEvent *event, gpointer data)
+     status = EVENT_FILTER_CONTINUE;
+     removed = NULL;
+     cycling = TRUE;
+-    gone = FALSE;
+ 
+     /* Update the display time */
+     myDisplayUpdateCurrentTime (display_info, event);
+@@ -400,18 +399,28 @@ clientCycleEventFilter (XfwmEvent *event, gpointer data)
+             {
+                 case DestroyNotify:
+                     status = EVENT_FILTER_CONTINUE;
+-                    if ((removed = myScreenGetClientFromWindow (screen_info, ((XDestroyWindowEvent *) event->meta.x)->window, SEARCH_WINDOW)) == NULL)
++                    removed = myScreenGetClientFromWindow (screen_info,
++                                                           ((XDestroyWindowEvent *) event->meta.x)->window,
++                                                           SEARCH_WINDOW);
++                    if (removed == NULL)
++                    {
+                         break; /* No need to go any further */
+-                    gone |= (c == removed);
++                    }
+                     FALLTHROUGH;
+                 case UnmapNotify:
+                     status = EVENT_FILTER_CONTINUE;
+-                    if (!removed && (removed = myScreenGetClientFromWindow (screen_info, ((XUnmapEvent *) event->meta.x)->window, SEARCH_WINDOW)) == NULL)
+-                        break; /* No need to go any further */
+-                    gone |= (c == removed);
++                    if (!removed)
++                    {
++                        removed = myScreenGetClientFromWindow (screen_info,
++                                                               ((XUnmapEvent *) event->meta.x)->window,
++                                                               SEARCH_WINDOW);
++                        if (removed == NULL)
++                        {
++                            break; /* No need to go any further */
++                        }
++                    }
+                     c = tabwinRemoveClient(passdata->tabwin, removed);
+                     cycling = clientCycleUpdateWireframe (c, passdata);
+-                    status = EVENT_FILTER_STOP;
+                     break;
+             }
+             break;
+-- 
+cgit v1.2.1
+

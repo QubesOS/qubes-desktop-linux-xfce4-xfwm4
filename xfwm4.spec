@@ -1,37 +1,44 @@
-%global xfceversion 4.12
+%global xfceversion 4.13
 
 Name:           xfwm4
-Version:        4.12.4
-Release:        1%{?dist}
+Version:        4.13.1
+Release:        8%{?dist}
 Epoch:          1000
 Summary:        Next generation window manager for Xfce
 
-Group:          User Interface/Desktops
 License:        GPLv2+
 URL:            http://www.xfce.org/
 #VCS git:git://git.xfce.org/xfce/xfwm4
 Source0:        http://archive.xfce.org/src/xfce/%{name}/%{xfceversion}/%{name}-%{version}.tar.bz2
-## Downstream patches:
-# Fix desktop categories
-Patch10:        xfwm4-4.9.0-desktop-fix.patch
 
-Patch20:	xfwm4-4.6.1-cleanup-idle-queue.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=1624353
+# https://bugzilla.xfce.org/show_bug.cgi?id=14652
+# https://bugzilla.xfce.org/show_bug.cgi?id=13519
+Patch0:         sync-x-gl.patch
+Patch1:         fix_shaded_windows.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=1666735
+# https://bugzilla.xfce.org/show_bug.cgi?id=15085
+Patch2:         fix_screen_size.patch
+# https://bugzilla.xfce.org/show_bug.cgi?id=15318
+# https://bugzilla.redhat.com/show_bug.cgi?id=1700111
+Patch3:         fix_windows_cycling_breakage.patch
 
-Patch100:	xfwm4-4.12.3-qubes-decoration.patch
+Patch100:	xfwm4-4.13.1-qubes-decoration.patch
 Patch101:	xfwm4-4.12.3-qubes-decoration-custom-colors.patch
 Patch102:	xfwm4-4.12.3-qubes-decoration-black-hack.patch
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
+BuildRequires:  gcc-c++
 BuildRequires:  libxfce4ui-devel >= %{xfceversion}
 BuildRequires:  libXext-devel
-BuildRequires:  gettext 
+%if 0%{?fedora}
+BuildRequires:  libXpresent-devel
+%endif
+BuildRequires:  gettext
 BuildRequires:  intltool
 BuildRequires:  libXcomposite-devel
 BuildRequires:  libXdamage-devel
 BuildRequires:  startup-notification-devel >= 0.5
-BuildRequires:  libglade2-devel
-BuildRequires:  libwnck-devel >= 2.22
+BuildRequires:  libwnck3-devel >= 3.14
 BuildRequires:  xfconf-devel >= %{xfceversion}
 BuildRequires:  desktop-file-utils
 Requires:	qubes-desktop-linux-common
@@ -41,55 +48,26 @@ Provides:       firstboot(windowmanager) = xfwm4
 xfwm4 is a window manager compatible with GNOME, GNOME2, KDE2, KDE3 and Xfce.
 
 %prep
-%setup -q
-%patch10 -p1 -b .categories
-
-%patch20 -p1 -b .cleanup-idle
-
-%patch100 -p1 -b .qubes
-%patch101 -p1 -b .qubes-custom-color
-%patch102 -p1 -b .qubes-black-hack
+%autosetup -p1
 
 
 %build
 %configure  --disable-static
 
-make %{?_smp_mflags} V=1
-
+%make_build
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT INSTALL='install -p'
+%make_install
 
 %find_lang %{name}
 
-for file in $RPM_BUILD_ROOT/%{_datadir}/applications/*.desktop; do
+for file in %{buildroot}/%{_datadir}/applications/*.desktop; do
     desktop-file-validate $file
 done
 
-
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-
-%post
-touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-
-
-%postun
-if [ $1 -eq 0 ] ; then
-    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
-    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-fi
-
-
-%posttrans
-gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-
-
 %files -f %{name}.lang
-%defattr(-,root,root,-)
-%doc example.gtkrc-2.0 README TODO COPYING AUTHORS COMPOSITOR
+%license COPYING
+%doc example.gtkrc-2.0 README TODO AUTHORS COMPOSITOR
 %{_bindir}/xfwm4
 %{_bindir}/xfwm4-settings
 %{_bindir}/xfwm4-tweaks-settings
@@ -103,6 +81,90 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Wed Apr 24 2019 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.13.1-8
+- Add patch to fix crash during window cycling (Fixes #1700111)
+
+* Mon Apr 22 2019 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.13.1-7
+- Add patch to fix screen size issues (Fixes #1666735)
+
+* Sun Feb 03 2019 Fedora Release Engineering <releng@fedoraproject.org> - 4.13.1-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
+* Wed Jan 16 2019 Dan Horák <dan[at]danny.cz> - 4.13.1-5
+- Update BR
+
+* Thu Dec 20 2018 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.13.1-4
+- Add patch to fix bug #1652801
+
+* Mon Sep 03 2018 Miro Hrončok <mhroncok@redhat.com> - 4.13.1-3
+- Enable compositor
+- Fix GLX flickering (#1624353)
+- Build with libXpresent
+
+* Sat Aug 18 2018 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.13.1-2
+- Disable compositor temporarily
+
+* Sat Aug 11 2018 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.13.1-1
+- Update to 4.13.1
+
+* Thu Aug 02 2018 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.12.5-1
+- Updated to 4.12.5
+
+* Sat Jul 14 2018 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.4-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Fri Feb 09 2018 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.4-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
+* Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Thu Mar 16 2017 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.12.4-1
+- Update to 4.12.4
+
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.3-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Fri Feb 05 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.12.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Fri Jun 19 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.12.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Sat May 16 2015 Kevin Fenzi <kevin@scrye.com> 4.12.3-1
+- Update to 4.12.3. Fixes bug #1222141
+
+* Sun Mar 15 2015 Kevin Fenzi <kevin@scrye.com> 4.12.2-1
+- Update to 4.12.2 to fix a regression with xfun4 dialog
+
+* Sat Mar 14 2015 Kevin Fenzi <kevin@scrye.com> 4.12.1-1
+- Update to 4.12.1
+
+* Sat Feb 28 2015 Mukundan Ragavan <nonamedotc@fedoraproject.org> - 4.12.0-1
+- Update to latest stable release 4.12.0
+
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 4.10.1-5
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
+* Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.10.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.10.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.10.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
+* Sun May 05 2013 Kevin Fenzi <kevin@scrye.com> 4.10.1-1
+- Update to 4.10.1
+
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.10.0-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Sun Oct 07 2012 Christoph Wickert <cwickert@fedoraproject.org> - 4.10.0-5
 - Delete active workspace instead of last workspace (bugzilla.xfce.org #8827)
 
