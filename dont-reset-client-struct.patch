@@ -1,0 +1,25 @@
+Do not reset client->*_timeout_id fields in clientFrame(). The client struct is
+allocated with g_new0(), which fill it with 0 already. But at this point there
+may be some data already - especially after Qubes frames patch calling
+clientUpdateName() earlier.
+
+--- a/src/client.c	2019-09-13 04:59:26.301000000 +0200
++++ b/src/client.c	2019-09-13 04:59:37.822000000 +0200
+@@ -1830,17 +1830,6 @@ clientFrame (DisplayInfo *display_info,
+         FLAG_SET (c->xfwm_flags, XFWM_FLAG_OPACITY_LOCKED);
+     }
+ 
+-    /* Timout for asynchronous icon update */
+-    c->icon_timeout_id = 0;
+-    /* Timout for asynchronous frame update */
+-    c->frame_timeout_id = 0;
+-    /* Timeout for blinking on urgency */
+-    c->blink_timeout_id = 0;
+-    /* Ping timeout  */
+-    c->ping_timeout_id = 0;
+-    /* Ping timeout  */
+-    c->ping_time = 0;
+-
+     c->class.res_name = NULL;
+     c->class.res_class = NULL;
+     XGetClassHint (display_info->dpy, w, &c->class);
