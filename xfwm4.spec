@@ -27,6 +27,7 @@ Patch100:	xfwm4-4.13.1-qubes-decoration.patch
 Patch101:	xfwm4-4.12.3-qubes-decoration-custom-colors.patch
 Patch102:	xfwm4-4.12.3-qubes-decoration-black-hack.patch
 Patch103:	dont-reset-client-struct.patch
+Patch104:	qubes-decoration-handle-guivm-windows-prefix.patch
 
 BuildRequires:  gcc-c++
 BuildRequires:  libxfce4ui-devel >= %{xfceversion}
