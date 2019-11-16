@@ -1,18 +1,18 @@
-From 31059eddefc5ab4025cd0246dd384e7029c5240f Mon Sep 17 00:00:00 2001
+From 67fb622a3b5d184c35cf5303b567186b6688fc66 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Tue, 5 Nov 2019 15:43:06 +0100
 Subject: [PATCH] qubes decoration: handle guivm windows prefix
 
 ---
- src/client.c | 20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ src/client.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/src/client.c b/src/client.c
-index f2f366c6..81bc7960 100644
+index f2f366c6..b1d2b595 100644
 --- a/src/client.c
 +++ b/src/client.c
-@@ -262,7 +262,25 @@ getQubesVmName (Client *c)
+@@ -262,12 +262,32 @@ getQubesVmName (Client *c)
                      c->qubes_vmname = g_strdup (_("[ERROR Reading VM name?!] "));
                  }
              } else {
@@ -27,11 +27,12 @@ index f2f366c6..81bc7960 100644
 +                                        FALSE, AnyPropertyType, &actual_type, &actual_format, &nitems,
 +                                        &bytes_left, (unsigned char **) &data) == Success))
 +                        {
-+                            g_free (c->qubes_vmname);
 +                            c->qubes_vmname = g_strdup_printf (_("[%s] "), data);
 +                        } else {
-+                            c->qubes_vmname = g_strdup("[Dom0] ");
++                            c->qubes_vmname = g_strdup (_("[ERROR Reading VM name?!] "));
 +                        }
++                    } else {
++                        c->qubes_vmname = g_strdup("[Dom0] ");
 +                    }
 +                } else {
 +                    c->qubes_vmname = g_strdup("[Dom0] ");
@@ -39,6 +40,12 @@ index f2f366c6..81bc7960 100644
              }
          } else {
              c->qubes_vmname = g_strdup("[Dom0] ");
+         }
+     }
++    TRACE ("qubes_vmname \"%s\"", c->qubes_vmname);
+ }
+ 
+ static gchar*
 -- 
 2.21.0
 
