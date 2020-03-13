@@ -1,0 +1,88 @@
+diff --git a/src/frame.c b/src/frame.c
+index 8fcc5a0df..5383710bf 100644
+--- a/src/frame.c
++++ b/src/frame.c
+@@ -576,7 +576,8 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
+         frameFillTitlePixmap (c, state, TITLE_3, x, w3, top_height, title_pm, top_pm);
+         title_x = hoffset + x;
+         cairo_translate (cr, title_x, title_y);
+-        if (screen_info->params->title_shadow[state])
++        if (c->qubes_label_color == QUBES_LABEL_DOM0 &&
++            screen_info->params->title_shadow[state])
+         {
+             gdk_cairo_set_source_rgba (cr, &screen_info->title_shadow_colors[state]);
+             if (screen_info->params->title_shadow[state] == TITLE_SHADOW_UNDER)
+@@ -598,7 +599,7 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
+                 cairo_translate (cr, 0, -1);
+             }
+         }
+-        gdk_cairo_set_source_rgba (cr, &screen_info->title_colors[state]);
++        gdk_cairo_set_source_rgba (cr, &decoration->title_colors[state]);
+         pango_cairo_show_layout (cr, layout);
+         x = x + w3;
+     }
+diff --git a/src/screen.h b/src/screen.h
+index f7e6b2ca3..796fe1e27 100644
+--- a/src/screen.h
++++ b/src/screen.h
+@@ -79,6 +79,8 @@ struct _Decoration
+     xfwmPixmap sides[SIDE_COUNT][2];
+     xfwmPixmap title[TITLE_COUNT][2];
+     xfwmPixmap top[TITLE_COUNT][2];
++
++    GdkRGBA title_colors[2];
+ };
+ 
+ struct _ScreenInfo
+diff --git a/src/settings.c b/src/settings.c
+index c16946802..70df0e861 100644
+--- a/src/settings.c
++++ b/src/settings.c
+@@ -378,6 +378,25 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
+         xfwmPixmapLoad (screen_info, &decoration->top[i][INACTIVE], theme, imagename, screen_info->colsym, color);
+     }
+ 
++    if (color == QUBES_LABEL_DOM0) {
++        decoration->title_colors[0] = screen_info->title_colors[0];
++        decoration->title_colors[1] = screen_info->title_colors[1];
++    } else {
++        gdouble h, s, v;
++        gtk_rgb_to_hsv(
++            1.0*((color & 0xFF0000) >> 16)/0xFF,
++            1.0*((color & 0x00FF00) >>  8)/0xFF,
++            1.0*((color & 0x0000FF) >>  0)/0xFF,
++            &h, &s, &v);
++        if (v < 0.2) {
++            decoration->title_colors[0] = qubes_title_colors_light[0];
++            decoration->title_colors[1] = qubes_title_colors_light[1];
++        } else {
++            decoration->title_colors[0] = qubes_title_colors_dark[0];
++            decoration->title_colors[1] = qubes_title_colors_dark[1];
++        }
++    }
++
+     g_hash_table_insert(screen_info->decoration, GINT_TO_POINTER(color), decoration);
+     return decoration;
+ }
+diff --git a/src/settings.h b/src/settings.h
+index ded3c3c36..f8924109e 100644
+--- a/src/settings.h
++++ b/src/settings.h
+@@ -182,6 +182,17 @@ static const guint qubes_label_colors[] = {
+     0x000000,   /* QUBES_LABEL_BLACK */
+ };
+ 
++/* Title colors: active, inactive */
++static const GdkRGBA qubes_title_colors_dark[2] = {
++    { 0, 0, 0, 1 },
++    { 0.3, 0.3, 0.3, 1},
++};
++
++static const GdkRGBA qubes_title_colors_light[2] = {
++    { 0.8, 0.8, 0.8, 1 },
++    { 0.5, 0.5, 0.5, 1 },
++};
++
+ struct _Settings
+ {
+     gchar  *option;
