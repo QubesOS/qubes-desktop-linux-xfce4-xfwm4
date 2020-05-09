@@ -35,29 +35,44 @@ index f7e6b2ca3..796fe1e27 100644
  
  struct _ScreenInfo
 diff --git a/src/settings.c b/src/settings.c
-index c16946802..70df0e861 100644
+index c16946802..a6c5a1d74 100644
 --- a/src/settings.c
 +++ b/src/settings.c
-@@ -378,6 +378,25 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
+@@ -378,6 +378,40 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
          xfwmPixmapLoad (screen_info, &decoration->top[i][INACTIVE], theme, imagename, screen_info->colsym, color);
      }
  
 +    if (color == QUBES_LABEL_DOM0) {
++        /* For Dom0, use original title colors. */
 +        decoration->title_colors[0] = screen_info->title_colors[0];
 +        decoration->title_colors[1] = screen_info->title_colors[1];
++    } else if (color == 0x000000) {
++        /* This is a black label, override colors with light ones. */
++        decoration->title_colors[0] = qubes_title_colors_light[0];
++        decoration->title_colors[1] = qubes_title_colors_light[1];
 +    } else {
-+        gdouble h, s, v;
-+        gtk_rgb_to_hsv(
-+            1.0*((color & 0xFF0000) >> 16)/0xFF,
-+            1.0*((color & 0x00FF00) >>  8)/0xFF,
-+            1.0*((color & 0x0000FF) >>  0)/0xFF,
-+            &h, &s, &v);
-+        if (v < 0.2) {
-+            decoration->title_colors[0] = qubes_title_colors_light[0];
-+            decoration->title_colors[1] = qubes_title_colors_light[1];
-+        } else {
-+            decoration->title_colors[0] = qubes_title_colors_dark[0];
-+            decoration->title_colors[1] = qubes_title_colors_dark[1];
++        /*
++          For other windows, use the original colors, but tweak them to
++          improve contrast (make the dark ones darker, light ones brighter).
++
++          Note that some themes use opposite colors for active/inactive
++          windows, so the decision has to be made for these two colors
++          separately.
++        */
++        decoration->title_colors[0] = screen_info->title_colors[0];
++        decoration->title_colors[1] = screen_info->title_colors[1];
++
++        for (i = 0; i < 2; i++) {
++            GdkRGBA *c = &decoration->title_colors[i];
++            gdouble h, s, v;
++
++            gtk_rgb_to_hsv(c->red, c->green, c->blue, &h, &s, &v);
++            if (v < 0.6) {
++                v = v/2;
++            } else {
++                v = 1 - (1 - v)/2;
++            }
++            gtk_hsv_to_rgb(h, s, v, &c->red, &c->green, &c->blue);
 +        }
 +    }
 +
@@ -65,19 +80,14 @@ index c16946802..70df0e861 100644
      return decoration;
  }
 diff --git a/src/settings.h b/src/settings.h
-index ded3c3c36..f8924109e 100644
+index ded3c3c36..ecf709ce2 100644
 --- a/src/settings.h
 +++ b/src/settings.h
-@@ -182,6 +182,17 @@ static const guint qubes_label_colors[] = {
+@@ -182,6 +182,12 @@ static const guint qubes_label_colors[] = {
      0x000000,   /* QUBES_LABEL_BLACK */
  };
  
 +/* Title colors: active, inactive */
-+static const GdkRGBA qubes_title_colors_dark[2] = {
-+    { 0, 0, 0, 1 },
-+    { 0.3, 0.3, 0.3, 1},
-+};
-+
 +static const GdkRGBA qubes_title_colors_light[2] = {
 +    { 0.8, 0.8, 0.8, 1 },
 +    { 0.5, 0.5, 0.5, 1 },
