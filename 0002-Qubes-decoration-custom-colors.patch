@@ -1,8 +1,24 @@
-Index: xfwm4-4.12.3/src/client.c
-===================================================================
---- xfwm4-4.12.3.orig/src/client.c
-+++ xfwm4-4.12.3/src/client.c
-@@ -171,15 +171,31 @@ getQubesLabel (Client *c)
+From e5da8df545117dcc8e399bc2917d930c41f0a3f8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Sat, 16 May 2020 11:43:01 +0200
+Subject: [PATCH] Qubes decoration: custom colors
+
+Authors:
+@marmarek
+
+Original work done in:
+- QubesOS/qubes-desktop-linux-xfce4
+- QubesOS/qubes-desktop-linux-xfce4-xfwm4
+---
+ src/client.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/src/client.c b/src/client.c
+index 52d8dbda8..b9b12b96c 100644
+--- a/src/client.c
++++ b/src/client.c
+@@ -173,15 +173,31 @@ getQubesLabel (Client *c)
      ScreenInfo *screen_info;
      DisplayInfo *display_info;
      Atom atom_label;
@@ -37,3 +53,6 @@ Index: xfwm4-4.12.3/src/client.c
          Atom actual_type;
          int actual_format;
          unsigned long nitems = 0, bytes_left;
+-- 
+2.25.4
+

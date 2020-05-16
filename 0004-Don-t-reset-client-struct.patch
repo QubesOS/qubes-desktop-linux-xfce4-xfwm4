@@ -1,11 +1,29 @@
+From 1d1d35c342c5defe4acb3f74c56358d67b078d83 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Sat, 16 May 2020 11:44:28 +0200
+Subject: [PATCH] Don't reset client struct
+
 Do not reset client->*_timeout_id fields in clientFrame(). The client struct is
 allocated with g_new0(), which fill it with 0 already. But at this point there
 may be some data already - especially after Qubes frames patch calling
 clientUpdateName() earlier.
 
---- a/src/client.c	2019-09-13 04:59:26.301000000 +0200
-+++ b/src/client.c	2019-09-13 04:59:37.822000000 +0200
-@@ -1830,17 +1830,6 @@ clientFrame (DisplayInfo *display_info,
+Authors:
+@marmarek
+
+Original work done in:
+- QubesOS/qubes-desktop-linux-xfce4
+- QubesOS/qubes-desktop-linux-xfce4-xfwm4
+---
+ src/client.c | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/src/client.c b/src/client.c
+index b9b12b96c..ac9620f2c 100644
+--- a/src/client.c
++++ b/src/client.c
+@@ -1853,17 +1853,6 @@ clientFrame (DisplayInfo *display_info, Window w, gboolean recapture)
          FLAG_SET (c->xfwm_flags, XFWM_FLAG_OPACITY_LOCKED);
      }
  
@@ -23,3 +41,6 @@ clientUpdateName() earlier.
      c->class.res_name = NULL;
      c->class.res_class = NULL;
      XGetClassHint (display_info->dpy, w, &c->class);
+-- 
+2.25.4
+

@@ -1,8 +1,38 @@
+From 97766a511b020482874ea68bd3d18fa20963bb71 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Sat, 16 May 2020 11:45:13 +0200
+Subject: [PATCH] Qubes decoration: title colors
+
+Add dark and light title colors
+
+When overriding decoration colors, provide our own title colors as
+well. Decide based on HSV whether the title should be dark or light.
+Skip title shadow (except for Dom0 where we don't modify it).
+
+This fixes black-on-black titles (QubesOS/qubes-issues#3854), but
+also improves the appearance of other titles, especially when the
+window is inactive. Before, the title color depended on XFCE theme,
+which often looked bad combined with Qubes' title bar (ugly colors,
+or similar brightness).
+
+Authors:
+@pwmarcz
+
+Original work done in:
+- QubesOS/qubes-desktop-linux-xfce4-xfwm4
+---
+ src/frame.c    |  5 +++--
+ src/screen.h   |  2 ++
+ src/settings.c | 19 +++++++++++++++++++
+ src/settings.h | 11 +++++++++++
+ 4 files changed, 35 insertions(+), 2 deletions(-)
+
 diff --git a/src/frame.c b/src/frame.c
-index 8fcc5a0df..5383710bf 100644
+index dee79071c..9f4ed0d05 100644
 --- a/src/frame.c
 +++ b/src/frame.c
-@@ -576,7 +576,8 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
+@@ -320,7 +320,8 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
          frameFillTitlePixmap (c, state, TITLE_3, x, w3, top_height, title_pm, top_pm);
          title_x = hoffset + x;
          cairo_translate (cr, title_x, title_y);
@@ -12,7 +42,7 @@ index 8fcc5a0df..5383710bf 100644
          {
              gdk_cairo_set_source_rgba (cr, &screen_info->title_shadow_colors[state]);
              if (screen_info->params->title_shadow[state] == TITLE_SHADOW_UNDER)
-@@ -598,7 +599,7 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
+@@ -342,7 +343,7 @@ frameCreateTitlePixmap (Client * c, int state, int left, int right, xfwmPixmap *
                  cairo_translate (cr, 0, -1);
              }
          }
@@ -22,10 +52,10 @@ index 8fcc5a0df..5383710bf 100644
          x = x + w3;
      }
 diff --git a/src/screen.h b/src/screen.h
-index f7e6b2ca3..796fe1e27 100644
+index cd60f6e3d..58af7af25 100644
 --- a/src/screen.h
 +++ b/src/screen.h
-@@ -79,6 +79,8 @@ struct _Decoration
+@@ -96,6 +96,8 @@ struct _Decoration
      xfwmPixmap sides[SIDE_COUNT][2];
      xfwmPixmap title[TITLE_COUNT][2];
      xfwmPixmap top[TITLE_COUNT][2];
@@ -35,10 +65,10 @@ index f7e6b2ca3..796fe1e27 100644
  
  struct _ScreenInfo
 diff --git a/src/settings.c b/src/settings.c
-index c16946802..70df0e861 100644
+index 56428f021..3f7452878 100644
 --- a/src/settings.c
 +++ b/src/settings.c
-@@ -378,6 +378,25 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
+@@ -398,6 +398,25 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
          xfwmPixmapLoad (screen_info, &decoration->top[i][INACTIVE], theme, imagename, screen_info->colsym, color);
      }
  
@@ -65,10 +95,10 @@ index c16946802..70df0e861 100644
      return decoration;
  }
 diff --git a/src/settings.h b/src/settings.h
-index ded3c3c36..f8924109e 100644
+index 9f4000f6a..6ed534186 100644
 --- a/src/settings.h
 +++ b/src/settings.h
-@@ -182,6 +182,17 @@ static const guint qubes_label_colors[] = {
+@@ -190,6 +190,17 @@ static const guint qubes_label_colors[] = {
      0x000000,   /* QUBES_LABEL_BLACK */
  };
  
@@ -86,3 +116,6 @@ index ded3c3c36..f8924109e 100644
  struct _Settings
  {
      gchar  *option;
+-- 
+2.25.4
+

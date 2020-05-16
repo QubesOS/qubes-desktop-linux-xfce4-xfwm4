@@ -1,0 +1,75 @@
+%global xfceversion %(version=@VERSION@; echo ${version%\.*})
+
+Name:           xfwm4
+Version:        @VERSION@
+Release:        @REL@%{?dist}
+Epoch:          1000
+Summary:        Next generation window manager for Xfce
+
+License:        GPLv2+
+URL:            http://www.xfce.org/
+#VCS git:git://git.xfce.org/xfce/xfwm4
+Source0:        http://archive.xfce.org/src/xfce/%{name}/%{xfceversion}/%{name}-%{version}.tar.bz2
+
+Patch0: 0001-Qubes-decoration.patch
+Patch1: 0002-Qubes-decoration-custom-colors.patch
+Patch2: 0003-Qubes-decoration-black-hack.patch
+Patch3: 0004-Don-t-reset-client-struct.patch
+Patch4: 0005-Qubes-decoration-handle-guivm-windows-prefix.patch
+Patch5: 0006-Qubes-decoration-title-colors.patch
+
+BuildRequires:  gcc-c++
+BuildRequires:  libxfce4ui-devel >= %{xfceversion}
+BuildRequires:  libXext-devel
+%if 0%{?fedora}
+BuildRequires:  libXpresent-devel
+%endif
+BuildRequires:  gettext
+BuildRequires:  intltool
+BuildRequires:  libXcomposite-devel
+BuildRequires:  libXdamage-devel
+BuildRequires:  startup-notification-devel >= 0.5
+BuildRequires:  libwnck3-devel >= 3.14
+BuildRequires:  xfconf-devel >= %{xfceversion}
+BuildRequires:  desktop-file-utils
+Requires:	qubes-desktop-linux-common
+Provides:       firstboot(windowmanager) = xfwm4
+
+%description
+xfwm4 is a window manager compatible with GNOME, GNOME2, KDE2, KDE3 and Xfce.
+
+%prep
+%autosetup -p1
+
+
+%build
+%configure  --disable-static
+
+%make_build
+
+%install
+%make_install
+
+%find_lang %{name}
+
+for file in %{buildroot}/%{_datadir}/applications/*.desktop; do
+    desktop-file-validate $file
+done
+
+%files -f %{name}.lang
+%license COPYING
+%doc example.gtkrc-2.0 README TODO AUTHORS COMPOSITOR
+%{_bindir}/xfwm4
+%{_bindir}/xfwm4-settings
+%{_bindir}/xfwm4-tweaks-settings
+%{_bindir}/xfwm4-workspace-settings
+%{_datadir}/applications/*.desktop
+%{_datadir}/icons/hicolor/*/*/*
+%{_datadir}/xfwm4
+%{_datadir}/themes/*
+%dir %{_libdir}/xfce4/xfwm4/
+%{_libdir}/xfce4/xfwm4/helper-dialog
+
+
+%changelog
+@CHANGELOG@

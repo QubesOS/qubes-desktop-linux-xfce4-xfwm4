@@ -1,15 +1,20 @@
-From 67fb622a3b5d184c35cf5303b567186b6688fc66 Mon Sep 17 00:00:00 2001
+From 2c3257dc8d88dd1ce7c9bcb32c521705958fb60f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
-Date: Tue, 5 Nov 2019 15:43:06 +0100
-Subject: [PATCH] qubes decoration: handle guivm windows prefix
+Date: Sat, 16 May 2020 11:44:53 +0200
+Subject: [PATCH] Qubes decoration: handle guivm windows prefix
 
+Authors:
+@fepitre
+
+Original work done in:
+- QubesOS/qubes-desktop-linux-xfce4-xfwm4
 ---
  src/client.c | 22 +++++++++++++++++++++-
  1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/src/client.c b/src/client.c
-index f2f366c6..b1d2b595 100644
+index ac9620f2c..aa66f008d 100644
 --- a/src/client.c
 +++ b/src/client.c
 @@ -262,12 +262,32 @@ getQubesVmName (Client *c)
@@ -47,5 +52,5 @@ index f2f366c6..b1d2b595 100644
  
  static gchar*
 -- 
-2.21.0
+2.25.4
 
