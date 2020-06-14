@@ -1,0 +1,44 @@
+Source: xfwm4
+Section: xfce
+Priority: optional
+Maintainer: Debian Xfce Maintainers <debian-xfce@lists.debian.org>
+Uploaders: Yves-Alexis Perez <corsac@debian.org>
+Build-Depends: debhelper-compat (= 12),
+               intltool,
+               libdrm-dev [!hurd-any],
+               libepoxy-dev,
+               libgtk-3-dev,
+               libstartup-notification0-dev,
+               libwnck-3-dev,
+               libxcomposite-dev,
+               libxdamage-dev,
+               libxfce4ui-2-dev (>= 4.12.0),
+               libxfce4util-dev (>= 4.10.0),
+               libxfconf-0-dev (>= 4.13.0),
+               libxfixes-dev,
+               libxft-dev,
+               libxpresent-dev,
+               libxrender-dev,
+               x11proto-present-dev,
+               xfce4-dev-tools
+Rules-Requires-Root: no
+Standards-Version: 4.5.0
+Homepage: https://www.xfce.org/
+Vcs-Git: https://salsa.debian.org/xfce-team/desktop/xfwm4.git
+Vcs-Browser: https://salsa.debian.org/xfce-team/desktop/xfwm4
+
+Package: xfwm4
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Recommends: librsvg2-common
+Suggests: xfce4
+Provides: x-window-manager
+Description: window manager of the Xfce project
+ This package contains xfwm4 which is the window manager for Xfce4.  It is
+ designed to run with the rest of Xfce4 but makes a capable window manager
+ for GNOME or KDE.
+ .
+ Install xfwm4 if you want a small, resource saving window manager which
+ complies to the standards defined at http://www.freedesktop.org/. Without
+ xfce4 installed this only gives you a window manager not the full
+ environment.

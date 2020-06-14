@@ -1,0 +1,3 @@
+version=3
+https://archive.xfce.org/src/xfce/@PACKAGE@/(\d[\d\.]+)/ \
+	@PACKAGE@@ANY_VERSION@@ARCHIVE_EXT@
