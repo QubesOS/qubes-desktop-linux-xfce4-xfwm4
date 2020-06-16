@@ -28,6 +28,11 @@ get-sources: $(SRC_FILE)
 verify-sources:
 	@true
 
+.PHONY: clean
+clean:
+	rm -rf debian/changelog.*
+	rm -rf pkgs
+
 # This target is generating content locally from upstream project
 # 'sources' file. Sanitization is done but it is encouraged to perform
 # update of component in non-sensitive environnements to prevent
