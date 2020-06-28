@@ -1,9 +1,10 @@
-RPM_SPEC_FILES := xfwm4.spec
-DEBIAN_BUILD_DIRS := debian-pkg/debian
 
 NO_ARCHIVE := 1
 
-ifneq ($(filter $(DISTRIBUTION), debian qubuntu),)
+# exclude older dists
+ifeq ($(filter $(DIST), stretch centos7),)
+RPM_SPEC_FILES := xfwm4.spec
+DEBIAN_BUILD_DIRS := debian-pkg/debian
 SOURCE_COPY_IN := source-debian-copy-in
 endif
 
