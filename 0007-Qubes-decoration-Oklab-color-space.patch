@@ -1,0 +1,276 @@
+diff --git a/src/mypixmap.c b/src/mypixmap.c
+index 52b55ac3e..8c0d3bdfd 100644
+--- a/src/mypixmap.c
++++ b/src/mypixmap.c
+@@ -47,6 +47,7 @@
+ #include <gtk/gtk.h>
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <math.h>
+ 
+ #include "mypixmap.h"
+ #include "xpm-color-table.h"
+@@ -517,7 +518,7 @@ file_buffer (enum buf_op op, gpointer handle)
+ 
+ /* This function does all the work. */
+ static GdkPixbuf *
+-pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean override, gdouble override_h, gdouble override_s, gdouble override_v)
++pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean override, gdouble override_r, gdouble override_g, gdouble override_b)
+ {
+     gchar pixel_str[32];
+     const gchar *buffer;
+@@ -576,6 +577,10 @@ pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean ov
+         return NULL;
+     }
+ 
++    gdouble override_lab_l, override_lab_a, override_lab_b;
++    rgb_to_lab(override_r, override_g, override_b,
++               &override_lab_l, &override_lab_a, &override_lab_b);
++
+     for (cnt = 0; cnt < n_col; cnt++)
+     {
+         gchar *color_name;
+@@ -608,19 +613,22 @@ pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean ov
+             color->green = 0;
+             color->blue = 0;
+         } else if (override) {
+-            gdouble h, s, v, new_r, new_g, new_b;
+-            /* override color - for Qubes labels */
+-            gtk_rgb_to_hsv(
+-                    1.0*color->red/0xFFFF,
+-                    1.0*color->green/0xFFFF,
+-                    1.0*color->blue/0xFFFF,
+-                    &h, &s, &v);
+-            /* Special case for black label, otherwise it is the same as gray -
+-             * see #2120 */
+-            if (override_h == 0.0 && override_s == 0.0 && override_v == 0.0)
+-                gtk_hsv_to_rgb(override_h, override_s, v * 0.2, &new_r, &new_g, &new_b);
+-            else
+-                gtk_hsv_to_rgb(override_h, override_s, v, &new_r, &new_g, &new_b);
++            /*
++             * Override color for Qubes labels. We completely override the
++             * color components (a and b), and also use the label's lightness,
++             * so that darker Qubes label produces darker image.
++             */
++            gdouble lab_l, lab_a, lab_b, new_r, new_g, new_b;
++            rgb_to_lab(
++                1.0*color->red/0xFFFF,
++                1.0*color->green/0xFFFF,
++                1.0*color->blue/0xFFFF,
++                &lab_l, &lab_a, &lab_b);
++
++            lab_l = (lab_l + override_lab_l) / 2.0;
++            lab_a = override_lab_a;
++            lab_b = override_lab_b;
++            lab_to_rgb(lab_l, lab_a, lab_b, &new_r, &new_g, &new_b);
+             color->red = new_r*0xFFFF;
+             color->green = new_g*0xFFFF;
+             color->blue = new_b*0xFFFF;
+@@ -696,7 +704,7 @@ pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean ov
+ 
+ static GdkPixbuf *
+ xpm_image_load (const char *filename, xfwmColorSymbol *color_sym,
+-        gboolean override, gdouble override_h, gdouble override_s, gdouble override_v)
++        gboolean override, gdouble override_r, gdouble override_g, gdouble override_b)
+ {
+     guchar buffer[1024];
+     GdkPixbuf *pixbuf;
+@@ -723,7 +731,7 @@ xpm_image_load (const char *filename, xfwmColorSymbol *color_sym,
+     memset (&h, 0, sizeof (h));
+     h.infile = f;
+     pixbuf = pixbuf_create_from_xpm (&h, color_sym, override,
+-            override_h, override_s, override_v);
++            override_r, override_g, override_b);
+     g_free (h.buffer);
+     fclose (f);
+ 
+@@ -990,13 +998,10 @@ xfwmPixmapLoad (ScreenInfo * screen_info, xfwmPixmap * pm, const gchar * dir, co
+     filename = g_build_filename (dir, filexpm, NULL);
+     g_free (filexpm);
+     if (label_color != 0xFFFFFFFF) {
+-        gdouble h, s, v;
+-        gtk_rgb_to_hsv(
+-                1.0*((label_color & 0xFF0000) >> 16)/0xFF,
+-                1.0*((label_color & 0x00FF00) >>  8)/0xFF,
+-                1.0*((label_color & 0x0000FF) >>  0)/0xFF,
+-                &h, &s, &v);
+-        pixbuf = xpm_image_load (filename, cs, TRUE, h, s, v);
++        gdouble r = 1.0*((label_color & 0xFF0000) >> 16)/0xFF;
++        gdouble g = 1.0*((label_color & 0x00FF00) >>  8)/0xFF;
++        gdouble b = 1.0*((label_color & 0x0000FF) >>  0)/0xFF;
++        pixbuf = xpm_image_load (filename, cs, TRUE, r, g, b);
+     } else {
+         pixbuf = xpm_image_load (filename, cs, FALSE, 0, 0, 0);
+     }
+@@ -1192,3 +1197,69 @@ xfwmPixmapCreateSurface (xfwmPixmap *pm, gboolean bitmap)
+                                           pm->width, pm->height);
+     }
+ }
++
++/*
++ * The following functions implement the Oklab color space. See:
++ *
++ *   https://bottosson.github.io/posts/oklab/
++ *
++ * Oklab consists of L (lightness), a and b (color components). The main
++ * benefit is that the lightness is uniform across colors, i.e. colors with
++ * different a and b and the same L are perceived to have the same lightness
++ * (which is not the case for HSV, for instance).
++ */
++
++void rgb_to_lab(gdouble rgb_r, gdouble rgb_g, gdouble rgb_b,
++                gdouble *lab_l, gdouble *lab_a, gdouble *lab_b) {
++
++    // sRGB -> linear sRGB
++
++    gdouble lin_r = ((rgb_r >= 0.04045) ? pow((rgb_r + 0.055) / 1.055, 2.4) : (rgb_r / 12.92));
++    gdouble lin_g = ((rgb_g >= 0.04045) ? pow((rgb_g + 0.055) / 1.055, 2.4) : (rgb_g / 12.92));
++    gdouble lin_b = ((rgb_b >= 0.04045) ? pow((rgb_b + 0.055) / 1.055, 2.4) : (rgb_b / 12.92));
++
++    // linear sRGB -> LAB
++
++    gdouble l_ = 0.4121656120 * lin_r + 0.5362752080 * lin_g + 0.0514575653 * lin_b;
++    gdouble m_ = 0.2118591070 * lin_r + 0.6807189584 * lin_g + 0.1074065790 * lin_b;
++    gdouble s_ = 0.0883097947 * lin_r + 0.2818474174 * lin_g + 0.6302613616 * lin_b;
++
++    l_ = cbrt(l_);
++    m_ = cbrt(m_);
++    s_ = cbrt(s_);
++
++    *lab_l = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
++    *lab_a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
++    *lab_b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
++}
++
++inline double clamp01(double x) {
++    if (x < 0.0)
++        return 0.0;
++    if (x > 1.0)
++        return 1.0;
++    return x;
++}
++
++void lab_to_rgb(gdouble lab_l, gdouble lab_a, gdouble lab_b,
++                gdouble *rgb_r, gdouble *rgb_g, gdouble *rgb_b) {
++    // LAB -> linear sRGB
++
++    gdouble l_ = lab_l + 0.3963377774 * lab_a + 0.2158037573 * lab_b;
++    gdouble m_ = lab_l - 0.1055613458 * lab_a - 0.0638541728 * lab_b;
++    gdouble s_ = lab_l - 0.0894841775 * lab_a - 1.2914855480 * lab_b;
++
++    l_ = l_*l_*l_;
++    m_ = m_*m_*m_;
++    s_ = s_*s_*s_;
++
++    gdouble lin_r = +4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_;
++    gdouble lin_g = -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_;
++    gdouble lin_b = -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_;
++
++    // linear sRGB -> sRGB
++
++    *rgb_r = clamp01(((lin_r >= 0.0031308) ? 1.055 * pow(lin_r, 1.0/2.4) - 0.055 : 12.92 * lin_r));
++    *rgb_g = clamp01(((lin_g >= 0.0031308) ? 1.055 * pow(lin_g, 1.0/2.4) - 0.055 : 12.92 * lin_g));
++    *rgb_b = clamp01(((lin_b >= 0.0031308) ? 1.055 * pow(lin_b, 1.0/2.4) - 0.055 : 12.92 * lin_b));
++}
+diff --git a/src/mypixmap.h b/src/mypixmap.h
+index f089e9a1b..765853e85 100644
+--- a/src/mypixmap.h
++++ b/src/mypixmap.h
+@@ -82,4 +82,12 @@ void                     xfwmPixmapDuplicate                    (xfwmPixmap *,
+                                                                  xfwmPixmap *);
+ cairo_surface_t         *xfwmPixmapCreateSurface                (xfwmPixmap *,
+                                                                  gboolean);
++
++
++void rgb_to_lch(gdouble r, gdouble g, gdouble b,
++                gdouble *l, gdouble *c, gdouble *h);
++
++void lch_to_rgb(gdouble l, gdouble c, gdouble h,
++                gdouble *r, gdouble *g, gdouble *b);
++
+ #endif /* INC_MYPIXMAP_H */
+diff --git a/src/settings.c b/src/settings.c
+index 3f7452878..79cbe8577 100644
+--- a/src/settings.c
++++ b/src/settings.c
+@@ -35,6 +35,7 @@
+ #include <xfconf/xfconf.h>
+ #include <libxfce4kbd-private/xfce-shortcuts-provider.h>
+ 
++#include "mypixmap.h"
+ #include "screen.h"
+ #include "hints.h"
+ #include "parserc.h"
+@@ -398,22 +399,39 @@ Decoration *getDecorationForColor(ScreenInfo *screen_info, guint32 color)
+         xfwmPixmapLoad (screen_info, &decoration->top[i][INACTIVE], theme, imagename, screen_info->colsym, color);
+     }
+ 
+-    if (color == QUBES_LABEL_DOM0) {
+-        decoration->title_colors[0] = screen_info->title_colors[0];
+-        decoration->title_colors[1] = screen_info->title_colors[1];
+-    } else {
+-        gdouble h, s, v;
+-        gtk_rgb_to_hsv(
++    decoration->title_colors[0] = screen_info->title_colors[0];
++    decoration->title_colors[1] = screen_info->title_colors[1];
++    if (color != QUBES_LABEL_DOM0) {
++        /*
++         * Override title colors, so that they look good on colorized
++         * decorations:
++         * - use a predefined (hopefully high-contrast) set of dark or light
++         *   colors, depending on original title color,
++         * - process active/inactive (0/1) colors separately, as some themes
++         *   use a dark color for active title and light color for inactive
++         *   title (or vice versa),
++         * - make sure we use light colors for dark labels such as black
++         *   (label_l is low).
++         */
++
++        gdouble label_l, label_a, label_b;
++        rgb_to_lab(
+             1.0*((color & 0xFF0000) >> 16)/0xFF,
+             1.0*((color & 0x00FF00) >>  8)/0xFF,
+             1.0*((color & 0x0000FF) >>  0)/0xFF,
+-            &h, &s, &v);
+-        if (v < 0.2) {
+-            decoration->title_colors[0] = qubes_title_colors_light[0];
+-            decoration->title_colors[1] = qubes_title_colors_light[1];
+-        } else {
+-            decoration->title_colors[0] = qubes_title_colors_dark[0];
+-            decoration->title_colors[1] = qubes_title_colors_dark[1];
++            &label_l, &label_a, &label_b);
++
++        for (i = 0; i < 2; i++) {
++            GdkRGBA *c = &decoration->title_colors[i];
++
++            gdouble title_l, title_a, title_b;
++            rgb_to_lab(c->red, c->green, c->blue,
++                       &title_l, &title_a, &title_b);
++
++            if (label_l <= 0.4 || title_l > 0.75)
++                *c = qubes_title_colors_light[i];
++            else
++                *c = qubes_title_colors_dark[i];
+         }
+     }
+ 
+diff --git a/src/settings.h b/src/settings.h
+index 6ed534186..e56e54849 100644
+--- a/src/settings.h
++++ b/src/settings.h
+@@ -193,12 +193,12 @@ static const guint qubes_label_colors[] = {
+ /* Title colors: active, inactive */
+ static const GdkRGBA qubes_title_colors_dark[2] = {
+     { 0, 0, 0, 1 },
+-    { 0.3, 0.3, 0.3, 1},
++    { 0.25, 0.25, 0.25, 1},
+ };
+ 
+ static const GdkRGBA qubes_title_colors_light[2] = {
+-    { 0.8, 0.8, 0.8, 1 },
+-    { 0.5, 0.5, 0.5, 1 },
++    { 1, 1, 1, 1 },
++    { 0.85, 0.85, 0.85, 1 },
+ };
+ 
+ struct _Settings
