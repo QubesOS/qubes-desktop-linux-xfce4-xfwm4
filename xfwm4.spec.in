@@ -18,6 +18,7 @@ Patch3: 0004-Don-t-reset-client-struct.patch
 Patch4: 0005-Qubes-decoration-handle-guivm-windows-prefix.patch
 Patch5: 0006-Qubes-decoration-title-colors.patch
 
+BuildRequires:  make
 BuildRequires:  gcc-c++
 BuildRequires:  libxfce4ui-devel >= %{xfceversion}
 BuildRequires:  libXext-devel
