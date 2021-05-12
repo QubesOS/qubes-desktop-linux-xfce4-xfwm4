@@ -9,9 +9,12 @@ SRC_FILE := xfwm4-$(VERSION).tar.bz2
 BUILDER_DIR ?= ../..
 SRC_DIR ?= qubes-src
 
-DISTFILES_MIRROR ?= http://archive.xfce.org/src/xfce/xfwm4/$(XFCE_VERSION)/
+DISTFILES_MIRROR ?= https://archive.xfce.org/src/xfce/xfwm4/$(XFCE_VERSION)/
 UNTRUSTED_SUFF := .UNTRUSTED
-FETCH_CMD := wget --no-use-server-timestamps -q -O
+
+ifeq ($(FETCH_CMD),)
+$(error "You can not run this Makefile without having FETCH_CMD defined")
+endif
 
 SHELL := /bin/bash
 
