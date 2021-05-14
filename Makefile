@@ -1,7 +1,7 @@
-DIST ?= fc32
-VERSION := $(shell cat version)
+DIST ?= fc33
+VERSION := $(file <version)
 XFCE_VERSION := $(word 1,$(subst ., ,$(VERSION))).$(word 2,$(subst ., ,$(VERSION)))
-REL := $(shell cat rel)
+REL := $(file <rel)
 
 FEDORA_SOURCES := https://src.fedoraproject.org/rpms/xfwm4/raw/f$(subst fc,,$(DIST))/f/sources
 SRC_FILE := xfwm4-$(VERSION).tar.bz2
@@ -12,15 +12,13 @@ SRC_DIR ?= qubes-src
 DISTFILES_MIRROR ?= https://archive.xfce.org/src/xfce/xfwm4/$(XFCE_VERSION)/
 UNTRUSTED_SUFF := .UNTRUSTED
 
-ifeq ($(FETCH_CMD),)
-$(error "You can not run this Makefile without having FETCH_CMD defined")
-endif
+fetch = $(or $(FETCH_CMD),$(error You can not run this Makefile without having FETCH_CMD defined))
 
 SHELL := /bin/bash
 
 %: %.sha512
-	@$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(DISTFILES_MIRROR)$@
-	@sha512sum --status -c <(printf "$$(cat $<)  -\n") <$@$(UNTRUSTED_SUFF) || \
+	@$(fetch) $@$(UNTRUSTED_SUFF) $(DISTFILES_MIRROR)$@
+	@sha512sum --status -c <(printf "$(file <$<)  -\n") <$@$(UNTRUSTED_SUFF) || \
 		{ echo "Wrong SHA512 checksum on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
@@ -35,6 +33,10 @@ verify-sources:
 clean:
 	rm -rf debian/changelog.*
 	rm -rf pkgs
+
+.PHONY: clean-sources
+clean-sources:
+	@rm -f $(SRC_FILE)
 
 # This target is generating content locally from upstream project
 # 'sources' file. Sanitization is done but it is encouraged to perform
