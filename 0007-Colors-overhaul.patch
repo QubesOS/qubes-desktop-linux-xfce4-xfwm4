@@ -1,3 +1,26 @@
+From 909d6307bd08899474a7d44f8520d1fc5ce3f416 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Pawe=C5=82=20Marczewski?= <pawel@invisiblethingslab.com>
+Date: Tue, 2 Feb 2021 17:29:34 +0100
+Subject: [PATCH 7/8] Colors overhaul
+
+Use a perceptual color space instead of HSV when colorizing
+window decorations, and retain more of the original decorations'
+lightness. This makes most decorations slightly less dark,
+improving contrast, removes the need for specialcasing black,
+and fixes the treatment of gray.
+
+In addition, try to determine light/dark text color depending
+on the original window manager theme. Most themes should look OK
+now.
+
+See QubesOS/qubes-issues#5800.
+---
+ src/mypixmap.c | 117 +++++++++++++++++++++++++++++++++++++++----------
+ src/mypixmap.h |   8 ++++
+ src/settings.c |  44 +++++++++++++------
+ src/settings.h |   6 +--
+ 4 files changed, 136 insertions(+), 39 deletions(-)
+
 diff --git a/src/mypixmap.c b/src/mypixmap.c
 index 52b55ac3e..8c0d3bdfd 100644
 --- a/src/mypixmap.c

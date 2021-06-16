@@ -17,7 +17,7 @@ Patch2: 0003-Qubes-decoration-black-hack.patch
 Patch3: 0004-Don-t-reset-client-struct.patch
 Patch4: 0005-Qubes-decoration-handle-guivm-windows-prefix.patch
 Patch5: 0006-Qubes-decoration-title-colors.patch
-Patch6: 0007-Qubes-decoration-Oklab-color-space.patch
+Patch6: 0007-Colors-overhaul.patch
 
 BuildRequires:  make
 BuildRequires:  gcc-c++
