@@ -1,0 +1,146 @@
+From 938d64572b0667775ea70b94c9bb02ff81b1fda2 Mon Sep 17 00:00:00 2001
+From: Demi Marie Obenour <demi@invisiblethingslab.com>
+Date: Mon, 14 Jun 2021 00:28:03 -0400
+Subject: [PATCH 8/8] Fail-safe when displaying colors
+
+If something goes wrong, display a window as red.
+---
+ src/client.c  | 86 +++++++++++++++++++++++++--------------------------
+ src/display.c |  4 ++-
+ src/display.h |  2 ++
+ 3 files changed, 48 insertions(+), 44 deletions(-)
+
+diff --git a/src/client.c b/src/client.c
+index aa66f00..8510a2c 100644
+--- a/src/client.c
++++ b/src/client.c
+@@ -172,55 +172,55 @@ getQubesLabel (Client *c)
+ {
+     ScreenInfo *screen_info;
+     DisplayInfo *display_info;
+-    Atom atom_label;
+-    Atom atom_label_color;
+ 
+     screen_info = c->screen_info;
+     display_info = screen_info->display_info;
+ 
+-    atom_label = XInternAtom(display_info->dpy, "_QUBES_LABEL", TRUE);
+-    atom_label_color = XInternAtom(display_info->dpy, "_QUBES_LABEL_COLOR", TRUE);
+-
+     c->qubes_label_color = QUBES_LABEL_DOM0;
+-    if (atom_label_color) {
+-        Atom actual_type;
+-        int actual_format;
+-        unsigned long nitems = 0, bytes_left;
+-        unsigned char *data = 0;
+-
+-        if ((XGetWindowProperty (display_info->dpy, c->window, atom_label_color, 0L, 1L,
+-                        FALSE, XA_CARDINAL, &actual_type, &actual_format, &nitems,
+-                        &bytes_left, &data) == Success))
+-        {
+-            if (nitems == 1 && actual_format == 32) {
+-                c->qubes_label_color = *(long*)data;
+-            }
+-        }
+-    }
+-    if (c->qubes_label_color == QUBES_LABEL_DOM0 && atom_label) {
+-        Atom actual_type;
+-        int actual_format;
+-        unsigned long nitems = 0, bytes_left;
+-        char *data = 0;
+-
+-        if ((XGetWindowProperty (display_info->dpy, c->window, atom_label, 0L, 1L,
+-                        FALSE, AnyPropertyType, &actual_type, &actual_format, &nitems,
+-                        &bytes_left, (unsigned char **) &data) == Success))
+-        {
+-            if (nitems != 1) {
+-                // ERROR? Only Dom0 Windows don't have this property set...
+-                c->qubes_label_color = QUBES_LABEL_DOM0;
+-            } else {
+-                int qubes_label = (int)*data;
+-                if (qubes_label >= 0 && qubes_label < MAX_QUBES_LABELS) {
+-                    c->qubes_label_color = qubes_label_colors[qubes_label];
+-                } else {
+-                    /* out of range?! */
+-                    c->qubes_label_color = QUBES_LABEL_RED;
+-                }
+-            }
++    Atom actual_type;
++    int actual_format = 100;
++    unsigned long nitems = 0, bytes_left = 100;
++    unsigned char *data = 0;
++
++    if ((XGetWindowProperty (display_info->dpy, c->window,
++                    display_info->atoms[QUBES_LABEL_COLOR], 0L, 1L,
++                    FALSE, XA_CARDINAL, &actual_type, &actual_format,
++                    &nitems, &bytes_left, &data) != Success)) {
++        g_warning("Cannot check if a window is a Qubes window");
++        c->qubes_label_color = QUBES_LABEL_RED;
++        return;
++    } else if (nitems == 1 && actual_format == 32 && bytes_left == 0 && data) {
++        c->qubes_label_color = *(long*)data;
++        XFree(data);
++        return;
++    } else if (nitems || actual_format || bytes_left || data) {
++        XFree(data);
++        g_warning("Cannot check if a window is a Qubes window");
++        c->qubes_label_color = QUBES_LABEL_RED;
++        return;
++    } else if ((XGetWindowProperty (display_info->dpy, c->window,
++                    display_info->atoms[QUBES_LABEL], 0L, 1L,
++                    FALSE, AnyPropertyType, &actual_type, &actual_format,
++                    &nitems, &bytes_left, (unsigned char **) &data) != Success)) {
++        g_warning("Cannot get QUBES_LABEL");
++        c->qubes_label_color = QUBES_LABEL_RED;
++    } else if (!actual_type && !actual_format && !nitems && !bytes_left && !data) {
++        // Only Dom0 Windows don't have this property set...
++        c->qubes_label_color = QUBES_LABEL_DOM0;
++    } else if (nitems != 1 || bytes_left || !data || actual_type != XA_CARDINAL ||
++               actual_format != 8) {
++        XFree(data);
++        g_warning("Bogus QUBES_LABEL?");
++        c->qubes_label_color = QUBES_LABEL_RED;
++    } else {
++        int qubes_label = (int)*data;
++        XFree(data);
++        if (qubes_label >= 0 && qubes_label < MAX_QUBES_LABELS) {
++            c->qubes_label_color = qubes_label_colors[qubes_label];
+         } else {
+-            c->qubes_label_color = QUBES_LABEL_DOM0;
++            /* out of range?! */
++            g_warning("Out of range QUBES_LABEL?");
++            c->qubes_label_color = QUBES_LABEL_RED;
+         }
+     }
+ }
+diff --git a/src/display.c b/src/display.c
+index d9cca8e..f9f35cb 100644
+--- a/src/display.c
++++ b/src/display.c
+@@ -179,7 +179,9 @@ myDisplayInitAtoms (DisplayInfo *display_info)
+         "XFWM4_TIMESTAMP_PROP",
+         "_XROOTPMAP_ID",
+         "_XSETROOT_ID",
+-        "_GTK_READ_RCFILES"
++        "_GTK_READ_RCFILES",
++        "_QUBES_LABEL",
++        "_QUBES_LABEL_COLOR",
+     };
+ 
+     g_assert (ATOM_COUNT == G_N_ELEMENTS (atom_names));
+diff --git a/src/display.h b/src/display.h
+index 1d6ffe6..c872a23 100644
+--- a/src/display.h
++++ b/src/display.h
+@@ -272,6 +272,8 @@ enum
+     XROOTPMAP,
+     XSETROOT,
+     GTK_READ_RCFILES,
++    QUBES_LABEL,
++    QUBES_LABEL_COLOR,
+     ATOM_COUNT
+ };
+ 
+-- 
+2.31.1
+
