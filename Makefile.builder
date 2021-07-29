@@ -1,8 +1,8 @@
 
 NO_ARCHIVE := 1
 
-# exclude older dists
-ifeq ($(filter $(DIST), stretch centos7),)
+# build only for fc34+
+ifneq ($(filter $(DIST), fc34 fc35 fc36),)
 RPM_SPEC_FILES := xfwm4.spec
 DEBIAN_BUILD_DIRS := debian-pkg/debian
 SOURCE_COPY_IN := source-debian-copy-in
