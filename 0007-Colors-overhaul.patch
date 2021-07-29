@@ -26,9 +26,9 @@ index 52b55ac3e..8c0d3bdfd 100644
 --- a/src/mypixmap.c
 +++ b/src/mypixmap.c
 @@ -47,6 +47,7 @@
- #include <gtk/gtk.h>
  #include <stdlib.h>
  #include <stdio.h>
+ #include <string.h>
 +#include <math.h>
  
  #include "mypixmap.h"

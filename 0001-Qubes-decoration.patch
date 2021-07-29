@@ -565,21 +565,21 @@ index 4d1870425..dee79071c 100644
              }
          }
 @@ -711,6 +724,7 @@ static void
- frameDrawWin (Client * c)
  {
      ScreenInfo *screen_info;
+     DisplayInfo *display_info;
 +    Decoration *decoration;
      FramePixmap frame_pix;
      xfwmPixmap *my_pixmap;
      gint state, x, button, left, right;
 @@ -727,6 +741,7 @@ frameDrawWin (Client * c)
-     frameClearQueueDraw (c);
  
      screen_info = c->screen_info;
+     display_info = screen_info->display_info;
 +    decoration = getDecorationForColor(screen_info, c->qubes_label_color);
+ 
      requires_clearing = FALSE;
      width_changed = FALSE;
-     height_changed = FALSE;
 @@ -818,7 +833,7 @@ frameDrawWin (Client * c)
              }
              else if (button >= 0)
@@ -863,7 +863,7 @@ index e5d23560a..f60413770 100644
 +#include <gtk/gtk.h>
  #include <stdlib.h>
  #include <stdio.h>
- 
+ #include <string.h>
 @@ -516,7 +517,7 @@ file_buffer (enum buf_op op, gpointer handle)
  
  /* This function does all the work. */
