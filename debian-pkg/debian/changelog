@@ -1,3 +1,35 @@
+xfwm4 (4.16.1-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * debian: initial packaging from upstream
+  * debian: lower version for BR xfconf
+  * Update travis
+  * Makefile: add clean of pkgs and debian changelog.*
+
+  [ Marek Marczykowski-Górecki ]
+  * Exclude build for distributions too old for Xfwm 4.14
+
+  [ Frédéric Pierret (fepitre) ]
+  * Add .gitlab-ci.yml
+  * spec: add BR make
+
+  [ Demi Marie Obenour ]
+  * Switch from wget to curl
+  * Clean up Makefile
+
+  [ Paweł Marczewski ]
+  * Colors overhaul
+
+  [ Demi Marie Obenour ]
+  * Clean up patch headings
+  * Fail-safe when displaying colors
+
+  [ Marek Marczykowski-Górecki ]
+  * Update to 4.16
+  * Build only for fc34+
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 01 Aug 2021 03:50:23 +0200
+
 xfwm4 (4.14.2-1) unstable; urgency=medium
 
   * Team upload.
