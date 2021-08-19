@@ -1,3 +1,9 @@
+xfwm4 (4.16.1-2) wheezy; urgency=medium
+
+  * Enable the build for bullseye too
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 19 Aug 2021 13:51:38 +0200
+
 xfwm4 (4.16.1-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
