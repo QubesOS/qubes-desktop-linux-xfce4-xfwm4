@@ -2,7 +2,7 @@ From 97766a511b020482874ea68bd3d18fa20963bb71 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sat, 16 May 2020 11:45:13 +0200
-Subject: [PATCH 6/8] Qubes decoration: title colors
+Subject: [PATCH 6/9] Qubes decoration: title colors
 
 Add dark and light title colors
 

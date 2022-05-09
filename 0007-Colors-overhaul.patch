@@ -1,7 +1,7 @@
 From 909d6307bd08899474a7d44f8520d1fc5ce3f416 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Pawe=C5=82=20Marczewski?= <pawel@invisiblethingslab.com>
 Date: Tue, 2 Feb 2021 17:29:34 +0100
-Subject: [PATCH 7/8] Colors overhaul
+Subject: [PATCH 7/9] Colors overhaul
 
 Use a perceptual color space instead of HSV when colorizing
 window decorations, and retain more of the original decorations'

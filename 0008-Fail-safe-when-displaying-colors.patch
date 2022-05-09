@@ -1,7 +1,7 @@
 From 938d64572b0667775ea70b94c9bb02ff81b1fda2 Mon Sep 17 00:00:00 2001
 From: Demi Marie Obenour <demi@invisiblethingslab.com>
 Date: Mon, 14 Jun 2021 00:28:03 -0400
-Subject: [PATCH 8/8] Fail-safe when displaying colors
+Subject: [PATCH 8/9] Fail-safe when displaying colors
 
 If something goes wrong, display a window as red.
 ---

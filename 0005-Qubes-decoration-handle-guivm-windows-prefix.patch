@@ -2,7 +2,7 @@ From 2c3257dc8d88dd1ce7c9bcb32c521705958fb60f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sat, 16 May 2020 11:44:53 +0200
-Subject: [PATCH 5/8] Qubes decoration: handle guivm windows prefix
+Subject: [PATCH 5/9] Qubes decoration: handle guivm windows prefix
 
 Authors:
 @fepitre

@@ -2,7 +2,7 @@ From 1d1d35c342c5defe4acb3f74c56358d67b078d83 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sat, 16 May 2020 11:44:28 +0200
-Subject: [PATCH 4/8] Don't reset client struct
+Subject: [PATCH 4/9] Don't reset client struct
 
 Do not reset client->*_timeout_id fields in clientFrame(). The client struct is
 allocated with g_new0(), which fill it with 0 already. But at this point there
