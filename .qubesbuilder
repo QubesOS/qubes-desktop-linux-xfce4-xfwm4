@@ -1,10 +1,10 @@
 host:
   rpm:
-    spec:
+    build:
     - xfwm4.spec
 vm:
   rpm:
-    spec:
+    build:
     - xfwm4.spec
   deb:
     build:
