@@ -1,0 +1,18 @@
+host:
+  rpm:
+    build:
+    - xfwm4.spec
+vm:
+  rpm:
+    build:
+    - xfwm4.spec
+  deb:
+    build:
+    - debian-pkg/debian
+    source:
+      commands:
+      - '@PLUGINS_DIR@/source_deb/scripts/debian-quilt @SOURCE_DIR@/series-debian.conf @BUILD_DIR@/debian/patches'
+source:
+  files:
+  - url: https://archive.xfce.org/src/xfce/xfwm4/4.14/xfwm4-4.14.2.tar.bz2
+    sha512: xfwm4-4.14.2.tar.bz2.sha512
