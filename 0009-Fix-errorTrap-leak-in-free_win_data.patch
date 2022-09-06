@@ -32,7 +32,7 @@ index 9177740..0050ab9 100644
          cw->picture = None;
      }
 -    myDisplayErrorTrapPush (display_info);
-+    myDisplayErrorTrapPopIgnore (display_info);
++    myDisplayErrorTrapPopIgnored (display_info);
  }
  
  static Picture
