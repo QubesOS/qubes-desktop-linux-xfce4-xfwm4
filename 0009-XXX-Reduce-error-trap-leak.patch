@@ -1,0 +1,25 @@
+From 8e22d3ba586a8e210cd30f3d8f755ad368be565a Mon Sep 17 00:00:00 2001
+From: Rusty Bird <rustybird@net-c.com>
+Date: Tue, 6 Sep 2022 13:36:44 +0000
+Subject: [PATCH] XXX Reduce error trap leak
+
+https://github.com/QubesOS/qubes-desktop-linux-xfce4-xfwm4/pull/18#issuecomment-1238050681
+---
+ src/compositor.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/compositor.c b/src/compositor.c
+index 9177740..38835ca 100644
+--- a/src/compositor.c
++++ b/src/compositor.c
+@@ -857,7 +857,6 @@ free_win_data (CWindow *cw, gboolean delete)
+         cw->saved_picture = cw->picture;
+         cw->picture = None;
+     }
+-    myDisplayErrorTrapPush (display_info);
+ }
+ 
+ static Picture
+-- 
+2.37.2
+
