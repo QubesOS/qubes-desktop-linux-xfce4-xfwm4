@@ -1,3 +1,16 @@
+xfwm4 (4.14.2-3) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * Add Qubes Builder v2 integration
+  * .qubesbuilder: replace 'spec' by 'build'
+
+  [ Rusty Bird ]
+  * Fix 0009-Fix-errorTrap-leak-in-free_win_data.patch
+  * Really apply all patches
+  * Replace previous patch with 0009-XXX-Reduce-error-trap-leak.patch
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 18 Sep 2022 06:35:19 +0200
+
 xfwm4 (4.14.2-2) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
