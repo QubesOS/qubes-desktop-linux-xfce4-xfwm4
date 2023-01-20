@@ -1,17 +1,10 @@
-xfwm4 (4.14.2-3) unstable; urgency=medium
+xfwm4 (4.16.1-2) wheezy; urgency=medium
 
-  [ Frédéric Pierret (fepitre) ]
-  * Add Qubes Builder v2 integration
-  * .qubesbuilder: replace 'spec' by 'build'
+  * Enable the build for bullseye too
 
-  [ Rusty Bird ]
-  * Fix 0009-Fix-errorTrap-leak-in-free_win_data.patch
-  * Really apply all patches
-  * Replace previous patch with 0009-XXX-Reduce-error-trap-leak.patch
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 19 Aug 2021 13:51:38 +0200
 
- -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 18 Sep 2022 06:35:19 +0200
-
-xfwm4 (4.14.2-2) unstable; urgency=medium
+xfwm4 (4.16.1-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
   * debian: initial packaging from upstream
@@ -37,13 +30,11 @@ xfwm4 (4.14.2-2) unstable; urgency=medium
   * Clean up patch headings
   * Fail-safe when displaying colors
 
-  [ Frédéric Pierret (fepitre) ]
-  * Drop Travis CI
+  [ Marek Marczykowski-Górecki ]
+  * Update to 4.16
+  * Build only for fc34+
 
-  [ Demi Marie Obenour ]
-  * Fix error trap leak in compositor
-
- -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 30 May 2022 03:24:46 +0200
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 01 Aug 2021 03:50:23 +0200
 
 xfwm4 (4.14.2-1) unstable; urgency=medium
 

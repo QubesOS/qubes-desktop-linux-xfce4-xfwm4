@@ -62,7 +62,7 @@ done
 
 %files -f %{name}.lang
 %license COPYING
-%doc example.gtkrc-2.0 README TODO AUTHORS COMPOSITOR
+%doc example.gtkrc-2.0 TODO AUTHORS COMPOSITOR
 %{_bindir}/xfwm4
 %{_bindir}/xfwm4-settings
 %{_bindir}/xfwm4-tweaks-settings
