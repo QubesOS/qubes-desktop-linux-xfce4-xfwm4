@@ -19,7 +19,6 @@ Patch4: 0005-Qubes-decoration-handle-guivm-windows-prefix.patch
 Patch5: 0006-Qubes-decoration-title-colors.patch
 Patch6: 0007-Colors-overhaul.patch
 Patch7: 0008-Fail-safe-when-displaying-colors.patch
-Patch8: 0009-XXX-Reduce-error-trap-leak.patch
 
 BuildRequires:  make
 BuildRequires:  gcc-c++
