@@ -1,3 +1,6 @@
+host-fc32: {}
+vm-buster: {}
+
 host:
   rpm:
     build:

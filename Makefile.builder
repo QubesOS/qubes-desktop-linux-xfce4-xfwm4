@@ -1,12 +1,9 @@
 
 NO_ARCHIVE := 1
 
-# build only for fc34+ and bullseye
-ifneq ($(filter $(DIST), fc34 fc35 fc36 bullseye),)
 RPM_SPEC_FILES := xfwm4.spec
 DEBIAN_BUILD_DIRS := debian-pkg/debian
 SOURCE_COPY_IN := source-debian-copy-in
-endif
 
 source-debian-copy-in: VERSION = $(shell cat $(ORIG_SRC)/version)
 source-debian-copy-in: ORIG_FILE = $(CHROOT_DIR)/$(DIST_SRC)/xfwm4_$(VERSION).orig.tar.bz2
