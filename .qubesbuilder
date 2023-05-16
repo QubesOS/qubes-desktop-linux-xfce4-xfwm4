@@ -1,5 +1,9 @@
-host-fc32: {}
-vm-buster: {}
+host-fc32:
+  rpm:
+    build: []
+vm-buster:
+  deb:
+    build: []
 
 host:
   rpm:
