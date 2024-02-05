@@ -1,3 +1,10 @@
+xfwm4 (4.16.1-4) unstable; urgency=medium
+
+  * Fix clearing build packages for selected distros
+  * Fix typo in the header file
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 05 Feb 2024 04:20:33 +0100
+
 xfwm4 (4.16.1-3) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
