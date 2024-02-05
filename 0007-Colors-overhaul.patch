@@ -205,10 +205,10 @@ index f089e9a1b..765853e85 100644
                                                                   gboolean);
 +
 +
-+void rgb_to_lch(gdouble r, gdouble g, gdouble b,
++void rgb_to_lab(gdouble r, gdouble g, gdouble b,
 +                gdouble *l, gdouble *c, gdouble *h);
 +
-+void lch_to_rgb(gdouble l, gdouble c, gdouble h,
++void lab_to_rgb(gdouble l, gdouble c, gdouble h,
 +                gdouble *r, gdouble *g, gdouble *b);
 +
  #endif /* INC_MYPIXMAP_H */
