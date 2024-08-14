@@ -21,5 +21,5 @@ vm:
       - '@PLUGINS_DIR@/source_deb/scripts/debian-quilt @SOURCE_DIR@/series-debian.conf @BUILD_DIR@/debian/patches'
 source:
   files:
-  - url: https://archive.xfce.org/src/xfce/xfwm4/4.16/xfwm4-@VERSION@.tar.bz2
+  - url: https://archive.xfce.org/src/xfce/xfwm4/4.18/xfwm4-@VERSION@.tar.bz2
     sha512: xfwm4-@VERSION@.tar.bz2.sha512

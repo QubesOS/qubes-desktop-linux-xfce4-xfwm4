@@ -46,7 +46,8 @@ xfwm4 is a window manager compatible with GNOME, GNOME2, KDE2, KDE3 and Xfce.
 
 
 %build
-%configure  --disable-static
+export export CFLAGS="%{optflags} -DSHOW_POSITION"
+%configure --disable-static
 
 %make_build
 
