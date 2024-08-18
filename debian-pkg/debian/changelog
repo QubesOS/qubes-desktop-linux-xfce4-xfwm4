@@ -1,3 +1,10 @@
+xfwm4 (4.18.0-1) unstable; urgency=medium
+
+  * ci: add R4.3 drop R4.2
+  * Update to 4.18.0
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 18 Aug 2024 15:12:55 +0200
+
 xfwm4 (4.16.1-4) unstable; urgency=medium
 
   * Fix clearing build packages for selected distros
