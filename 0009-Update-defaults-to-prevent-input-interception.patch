@@ -1,0 +1,32 @@
+From 9a724bda7814954dc63266bd94d20136b505645f Mon Sep 17 00:00:00 2001
+From: rsta79 <81906104+rsta79@users.noreply.github.com>
+Date: Fri, 14 Feb 2025 09:56:30 +0000
+Subject: [PATCH] fix: update defaults to prevent potential user input
+ interception
+
+---
+ defaults/defaults | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/defaults/defaults b/defaults/defaults
+index 83e873ff6..7fa1a8930 100644
+--- a/defaults/defaults
++++ b/defaults/defaults
+@@ -1,4 +1,4 @@
+-activate_action=bring
++activate_action=none
+ borderless_maximize=true
+ box_move=false
+ box_resize=false
+@@ -33,7 +33,7 @@ move_opacity=100
+ placement_mode=center
+ placement_ratio=20
+ popup_opacity=100
+-prevent_focus_stealing=false
++prevent_focus_stealing=true
+ raise_delay=250
+ raise_on_click=true
+ raise_on_focus=false
+-- 
+2.39.5
+
