@@ -1,23 +1,31 @@
 host-fc41:
   rpm:
-    build:
-    - xfwm4.spec
-vm-fc40:
-  rpm:
-    build:
-    - xfwm4.spec
-vm-fc41:
-  rpm:
-    build:
-    - xfwm4.spec
+    build: []
+vm-buster:
+  deb:
+    build: []
 vm-bookworm:
   deb:
-    build:
-    - debian-pkg/debian
-    source:
-      commands:
-      - '@PLUGINS_DIR@/source_deb/scripts/debian-quilt @SOURCE_DIR@/series-debian.conf @BUILD_DIR@/debian/patches'
+    build: []
 vm-noble:
+  deb:
+    build: []
+vm-fc40:
+  rpm:
+    build: []
+vm-fc41:
+  rpm:
+    build: []
+
+
+host:
+  rpm:
+    build:
+    - xfwm4.spec
+vm:
+  rpm:
+    build:
+    - xfwm4.spec
   deb:
     build:
     - debian-pkg/debian
