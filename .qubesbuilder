@@ -27,5 +27,5 @@ vm-noble:
 
 source:
   files:
-  - url: https://archive.xfce.org/src/xfce/xfwm4/4.18/xfwm4-@VERSION@.tar.bz2
+  - url: https://archive.xfce.org/src/xfce/xfwm4/4.20/xfwm4-@VERSION@.tar.bz2
     sha512: xfwm4-@VERSION@.tar.bz2.sha512

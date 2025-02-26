@@ -1,8 +1,8 @@
-From 2c3257dc8d88dd1ce7c9bcb32c521705958fb60f Mon Sep 17 00:00:00 2001
+From 64cc243c33ae10e02ceee6c19a5dc2f6081043d4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sat, 16 May 2020 11:44:53 +0200
-Subject: [PATCH 5/9] Qubes decoration: handle guivm windows prefix
+Subject: [PATCH 5/8] Qubes decoration: handle guivm windows prefix
 
 Authors:
 @fepitre
@@ -14,10 +14,10 @@ Original work done in:
  1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/src/client.c b/src/client.c
-index ac9620f2c..aa66f008d 100644
+index efb90c361..7d67d2353 100644
 --- a/src/client.c
 +++ b/src/client.c
-@@ -262,12 +262,32 @@ getQubesVmName (Client *c)
+@@ -291,12 +291,32 @@ getQubesVmName (Client *c)
                      c->qubes_vmname = g_strdup (_("[ERROR Reading VM name?!] "));
                  }
              } else {
@@ -52,5 +52,5 @@ index ac9620f2c..aa66f008d 100644
  
  static gchar*
 -- 
-2.25.4
+2.48.1
 

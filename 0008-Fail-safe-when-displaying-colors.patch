@@ -1,7 +1,7 @@
-From 938d64572b0667775ea70b94c9bb02ff81b1fda2 Mon Sep 17 00:00:00 2001
+From 5d62f548a5ec0767b35cc396c9764995442a2936 Mon Sep 17 00:00:00 2001
 From: Demi Marie Obenour <demi@invisiblethingslab.com>
 Date: Mon, 14 Jun 2021 00:28:03 -0400
-Subject: [PATCH 8/9] Fail-safe when displaying colors
+Subject: [PATCH 8/8] Fail-safe when displaying colors
 
 If something goes wrong, display a window as red.
 ---
@@ -11,10 +11,10 @@ If something goes wrong, display a window as red.
  3 files changed, 48 insertions(+), 44 deletions(-)
 
 diff --git a/src/client.c b/src/client.c
-index aa66f00..8510a2c 100644
+index 7d67d2353..acf769900 100644
 --- a/src/client.c
 +++ b/src/client.c
-@@ -172,55 +172,55 @@ getQubesLabel (Client *c)
+@@ -201,55 +201,55 @@ getQubesLabel (Client *c)
  {
      ScreenInfo *screen_info;
      DisplayInfo *display_info;
@@ -114,10 +114,10 @@ index aa66f00..8510a2c 100644
      }
  }
 diff --git a/src/display.c b/src/display.c
-index d9cca8e..f9f35cb 100644
+index ad43a2671..db3f09125 100644
 --- a/src/display.c
 +++ b/src/display.c
-@@ -179,7 +179,9 @@ myDisplayInitAtoms (DisplayInfo *display_info)
+@@ -166,7 +166,9 @@ myDisplayInitAtoms (DisplayInfo *display_info)
          "XFWM4_TIMESTAMP_PROP",
          "_XROOTPMAP_ID",
          "_XSETROOT_ID",
@@ -129,10 +129,10 @@ index d9cca8e..f9f35cb 100644
  
      g_assert (ATOM_COUNT == G_N_ELEMENTS (atom_names));
 diff --git a/src/display.h b/src/display.h
-index 1d6ffe6..c872a23 100644
+index 13d1daab4..5fbb0cc25 100644
 --- a/src/display.h
 +++ b/src/display.h
-@@ -272,6 +272,8 @@ enum
+@@ -271,6 +271,8 @@ enum
      XROOTPMAP,
      XSETROOT,
      GTK_READ_RCFILES,
@@ -142,5 +142,5 @@ index 1d6ffe6..c872a23 100644
  };
  
 -- 
-2.31.1
+2.48.1
 

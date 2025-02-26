@@ -1,8 +1,8 @@
-From fd8380aa0389bc3501917d90994f3cc291b8a026 Mon Sep 17 00:00:00 2001
+From 429841cdac7afd8b35a67b904bdb51be36e76075 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sat, 16 May 2020 11:43:36 +0200
-Subject: [PATCH 3/9] Qubes decoration: black hack
+Subject: [PATCH 3/8] Qubes decoration: black hack
 
 Authors:
 @marmarek
@@ -15,10 +15,10 @@ Original work done in:
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/src/mypixmap.c b/src/mypixmap.c
-index f60413770..52b55ac3e 100644
+index fc62dd6e5..7724bd812 100644
 --- a/src/mypixmap.c
 +++ b/src/mypixmap.c
-@@ -615,7 +615,12 @@ pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean ov
+@@ -624,7 +624,12 @@ pixbuf_create_from_xpm (gpointer handle, xfwmColorSymbol *color_sym, gboolean ov
                      1.0*color->green/0xFFFF,
                      1.0*color->blue/0xFFFF,
                      &h, &s, &v);
@@ -33,5 +33,5 @@ index f60413770..52b55ac3e 100644
              color->green = new_g*0xFFFF;
              color->blue = new_b*0xFFFF;
 -- 
-2.25.4
+2.48.1
 
