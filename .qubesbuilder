@@ -1,24 +1,30 @@
-host-fc32:
-  rpm:
-    build: []
-vm-buster:
-  deb:
-    build: []
-
-host:
+host-fc41:
   rpm:
     build:
     - xfwm4.spec
-vm:
+vm-fc40:
   rpm:
     build:
     - xfwm4.spec
+vm-fc41:
+  rpm:
+    build:
+    - xfwm4.spec
+vm-bookworm:
   deb:
     build:
     - debian-pkg/debian
     source:
       commands:
       - '@PLUGINS_DIR@/source_deb/scripts/debian-quilt @SOURCE_DIR@/series-debian.conf @BUILD_DIR@/debian/patches'
+vm-noble:
+  deb:
+    build:
+    - debian-pkg/debian
+    source:
+      commands:
+      - '@PLUGINS_DIR@/source_deb/scripts/debian-quilt @SOURCE_DIR@/series-debian.conf @BUILD_DIR@/debian/patches'
+
 source:
   files:
   - url: https://archive.xfce.org/src/xfce/xfwm4/4.18/xfwm4-@VERSION@.tar.bz2
