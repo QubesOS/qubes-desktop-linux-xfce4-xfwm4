@@ -1,0 +1,147 @@
+ src/client.c  | 53 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ src/client.h  |  1 +
+ src/display.c |  1 +
+ src/display.h |  1 +
+ src/events.c  |  3 ++-
+ 5 files changed, 55 insertions(+), 4 deletions(-)
+
+diff --git a/src/client.c b/src/client.c
+index 0cc52ef..8526819 100644
+--- a/src/client.c
++++ b/src/client.c
+@@ -319,6 +319,48 @@ getQubesVmName (Client *c)
+     TRACE ("qubes_vmname \"%s\"", c->qubes_vmname);
+ }
+ 
++void
++getQubesKeyboardGrabIndication (Client *c)
++{
++    ScreenInfo *screen_info;
++    DisplayInfo *display_info;
++    Atom atom_keyboard_grab_indication;
++
++    screen_info = c->screen_info;
++    display_info = screen_info->display_info;
++
++    atom_keyboard_grab_indication = XInternAtom(display_info->dpy, "_QUBES_KEYBOARD_GRAB_INDICATION", TRUE);
++
++    if (atom_keyboard_grab_indication == 0) {
++        c->qubes_keyboard_grab_indication = g_strdup("");
++    } else {
++        Atom actual_type;
++        int actual_format;
++        unsigned long nitems = 0, bytes_left;
++        char *data = 0;
++
++        if ((XGetWindowProperty (display_info->dpy, c->window, atom_keyboard_grab_indication, 0L, 0L,
++                        FALSE, AnyPropertyType, &actual_type, &actual_format, &nitems,
++                        &bytes_left, (unsigned char **) &data) == Success))
++        {
++            if (bytes_left > 0) {
++                if ((XGetWindowProperty (display_info->dpy, c->window, atom_keyboard_grab_indication, 0L, bytes_left,
++                                FALSE, AnyPropertyType, &actual_type, &actual_format, &nitems,
++                                &bytes_left, (unsigned char **) &data) == Success))
++                {
++                    c->qubes_keyboard_grab_indication = g_strdup_printf (_("%s "), data);
++                } else {
++                    c->qubes_keyboard_grab_indication = g_strdup (_("ERROR Reading keyboard grab indication?! "));
++                }
++            } else {
++                c->qubes_keyboard_grab_indication = g_strdup("");
++            }
++        } else {
++            c->qubes_keyboard_grab_indication = g_strdup("");
++        }
++    }
++}
++
+ static gchar*
+ clientCreateTitleName (Client *c, gchar *name, gchar *hostname)
+ {
+@@ -327,21 +369,22 @@ clientCreateTitleName (Client *c, gchar *name, gchar *hostname)
+     gchar *title;
+ 
+     g_return_val_if_fail (c != NULL, NULL);
+-    TRACE ("client \"%s\" (0x%lx)", c->name, c->window);
++    TRACE ("client \"%s\" (0x%lx) %s", c->name, c->window, c->qubes_keyboard_grab_indication);
+ 
+     screen_info = c->screen_info;
+     display_info = screen_info->display_info;
+ 
+     getQubesVmName (c);
++    getQubesKeyboardGrabIndication (c);
+ 
+     if (strlen (hostname) && (display_info->hostname) && (g_ascii_strcasecmp (display_info->hostname, hostname)))
+     {
+         /* TRANSLATORS: "(on %s)" is like "running on" the name of the other host */
+-        title = g_strdup_printf (_("%s%s (on %s)"), c->qubes_vmname, name, hostname);
++        title = g_strdup_printf (_("%s%s%s (on %s)"), c->qubes_keyboard_grab_indication, c->qubes_vmname, name, hostname);
+     }
+     else
+     {
+-        title = g_strdup_printf ("%s%s", c->qubes_vmname, name);
++        title = g_strdup_printf ("%s%s%s", c->qubes_keyboard_grab_indication, c->qubes_vmname, name);
+     }
+ 
+     return title;
+@@ -1524,6 +1567,10 @@ clientFree (Client *c)
+     {
+         g_free (c->qubes_vmname);
+     }
++    if (c->qubes_keyboard_grab_indication)
++    {
++        g_free (c->qubes_keyboard_grab_indication);
++    }
+     if (c->size)
+     {
+         XFree (c->size);
+diff --git a/src/client.h b/src/client.h
+index 7f2195a..7c83ae9 100644
+--- a/src/client.h
++++ b/src/client.h
+@@ -324,6 +324,7 @@ struct _Client
+     gchar *hostname;
+     gchar *name;
+     gchar *qubes_vmname;
++    gchar *qubes_keyboard_grab_indication;
+     guint qubes_label_color;
+     guint32 user_time;
+     GPid pid;
+diff --git a/src/display.c b/src/display.c
+index 78e2a6d..8efdcc8 100644
+--- a/src/display.c
++++ b/src/display.c
+@@ -169,6 +169,7 @@ myDisplayInitAtoms (DisplayInfo *display_info)
+         "_GTK_READ_RCFILES",
+         "_QUBES_LABEL",
+         "_QUBES_LABEL_COLOR",
++        "_QUBES_KEYBOARD_GRAB_INDICATION",
+     };
+ 
+     g_assert (ATOM_COUNT == G_N_ELEMENTS (atom_names));
+diff --git a/src/display.h b/src/display.h
+index ab4ea90..5caff80 100644
+--- a/src/display.h
++++ b/src/display.h
+@@ -273,6 +273,7 @@ enum
+     GTK_READ_RCFILES,
+     QUBES_LABEL,
+     QUBES_LABEL_COLOR,
++    QUBES_KEYBOARD_GRAB_INDICATION,
+     ATOM_COUNT
+ };
+ 
+diff --git a/src/events.c b/src/events.c
+index 8b9e1b8..0d9d9c9 100644
+--- a/src/events.c
++++ b/src/events.c
+@@ -1669,7 +1669,8 @@ handlePropertyNotify (DisplayInfo *display_info, XPropertyEvent * ev)
+         }
+         else if ((ev->atom == XA_WM_NAME) ||
+                  (ev->atom == display_info->atoms[NET_WM_NAME]) ||
+-                 (ev->atom == display_info->atoms[WM_CLIENT_MACHINE]))
++                 (ev->atom == display_info->atoms[WM_CLIENT_MACHINE]) ||
++                 (ev->atom == display_info->atoms[QUBES_KEYBOARD_GRAB_INDICATION]))
+         {
+             TRACE ("client \"%s\" (0x%lx) has received a XA_WM_NAME/NET_WM_NAME/WM_CLIENT_MACHINE notify", c->name, c->window);
+             clientUpdateName (c);
