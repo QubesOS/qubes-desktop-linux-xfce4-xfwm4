@@ -1,0 +1,36 @@
+From 7d643cffc1df6ce61abbbf5f6dec3f09aadc7afd Mon Sep 17 00:00:00 2001
+From: Yassin Ahmed <eng.yassin.elbedwihy@gmail.com>
+Date: Thu, 26 Feb 2026 10:31:29 -0500
+Subject: [PATCH] Keep state files only when SaveOnExit is true
+
+---
+ src/session.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/session.c b/src/session.c
+index b9b202572..aa752d5d4 100644
+--- a/src/session.c
++++ b/src/session.c
+@@ -731,13 +731,18 @@ sessionSavePhase2 (XfceSMClient *session,
+                    DisplayInfo *display_info)
+ {
+     const gchar *filename;
++    XfconfChannel *session_channel;
++    gboolean save_on_exit;
+ 
+     g_return_if_fail (XFCE_IS_SM_CLIENT (session));
+     g_return_if_fail (session == display_info->session);
+ 
++    session_channel = xfconf_channel_get("xfce4-session");
++    save_on_exit = xfconf_channel_get_bool(session_channel, "/general/SaveOnExit", TRUE);
++
+     filename = xfce_sm_client_get_state_file (display_info->session);
+     DBG ("Saving session to \"%s\"", filename);
+-    if (filename)
++    if (filename && save_on_exit)
+     {
+         sessionSaveWindowStates (display_info, filename);
+     }
+-- 
+2.53.0
+
