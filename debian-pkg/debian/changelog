@@ -1,3 +1,10 @@
+xfwm4 (4.20.0-3) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * dom0's name should not be weirdly capitalized
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 25 Aug 2026 21:12:42 +0200
+
 xfwm4 (4.20.0-2) unstable; urgency=medium
 
   [ Marek Marczykowski-Górecki ]
