@@ -89,7 +89,7 @@ index 0808e5a93..52d8dbda8 100644
 +    atom_vmname = XInternAtom(display_info->dpy, "_QUBES_VMNAME", TRUE);
 +
 +    if (atom_vmname == 0) {
-+        c->qubes_vmname = g_strdup("[Dom0] ");
++        c->qubes_vmname = g_strdup("[dom0] ");
 +    } else {
 +        Atom actual_type;
 +        int actual_format;
@@ -110,10 +110,10 @@ index 0808e5a93..52d8dbda8 100644
 +                    c->qubes_vmname = g_strdup (_("[ERROR Reading VM name?!] "));
 +                }
 +            } else {
-+                c->qubes_vmname = g_strdup("[Dom0] ");
++                c->qubes_vmname = g_strdup("[dom0] ");
 +            }
 +        } else {
-+            c->qubes_vmname = g_strdup("[Dom0] ");
++            c->qubes_vmname = g_strdup("[dom0] ");
 +        }
 +    }
 +}
